@@ -68,23 +68,31 @@ public class PlayerSkeleton {
       heuristic -= (float)totalHeight;
       heuristic -= (float)maxHeight;
       heuristic -= (float)bumpiness;
-      heuristic -= 2 * (float)holes;
+      heuristic -= (float)holes;
       
-      System.out.println(holes);
+      // System.out.println(holes);
       return heuristic;  
   }
   
+  // also counts blocks above holes
   public int getHoles(int[][] field, int[] top){
     int holes = 0;
+    int holeMultiplier = 1; // holes on top of holes are really bad
+    int holeDepth = 1; // total number of blocks above holes
+    
     for (int j = 0; j < field[0].length; j++){
       for (int i = top[j]-2; i >= 0; i--){
         if (field[i][j] == 0){
-          holes++;  
-        }  
-      }  
+          holes += holeMultiplier;
+          holeMultiplier++;  
+          continue;
+        }
+        holeDepth++;  
+      }
+      holeMultiplier = 1;  
     } 
     // System.out.println(holes); 
-    return holes;
+    return holes + holeDepth;
   }
   
   public int getBumpiness(int[] top){
