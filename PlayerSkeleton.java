@@ -14,6 +14,7 @@ public class PlayerSkeleton {
   private static int[][] pHeight;
   private static int[][][] pBottom;
   private static int[][][] pTop;
+  private double[] weights;
   
 
   //implement this function to have a working system
@@ -65,10 +66,10 @@ public class PlayerSkeleton {
          }
          totalHeight += top[i]; 
       }
-      heuristic -= (float)totalHeight;
-      heuristic -= (float)maxHeight;
-      heuristic -= (float)bumpiness;
-      heuristic -= (float)holes;
+      heuristic -= (float)totalHeight *weights[0];
+      heuristic -= (float)maxHeight * weights[1];
+      heuristic -= (float)bumpiness * weights[2];
+      heuristic -= (float)holes * weights[3];
       
       // System.out.println(holes);
       return heuristic;  
@@ -176,6 +177,26 @@ public class PlayerSkeleton {
       copy[i] = top[i];  
     }  
   }
+
+  private void setWeights(double[] weights){
+    this.weights = weights;
+  }
+
+  public static int run(double[] weights){
+    State s = new State();
+    pOrients = s.getpOrients();
+    pWidth = s.getpWidth();
+    pBottom = s.getpBottom();
+    pHeight = s.getpHeight();
+    pTop = s.getpTop();
+
+    PlayerSkeleton p = new PlayerSkeleton();
+    p.setWeights(weights);
+    while(!s.hasLost() && s.getTurnNumber()<501) {
+      s.makeMove(p.pickMove(s,s.legalMoves()));
+    }
+    return s.getRowsCleared();
+  }
   
   public static void main(String[] args) {
     State s = new State();
@@ -184,6 +205,7 @@ public class PlayerSkeleton {
     pBottom = s.getpBottom();
     pHeight = s.getpHeight();
     pTop = s.getpTop();
+
     
     new TFrame(s);
     PlayerSkeleton p = new PlayerSkeleton();
@@ -192,7 +214,7 @@ public class PlayerSkeleton {
       s.draw();
       s.drawNext(0,0);
       try {
-        Thread.sleep(300);
+        Thread.sleep(1);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }

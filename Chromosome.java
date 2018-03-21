@@ -2,8 +2,8 @@ import java.util.Random;
 
 public class Chromosome {
 
-    static int defaultGeneLength = 64;
-    private float[] genes = new float[defaultGeneLength];
+    public static int defaultGeneLength = 4;
+    private double[] genes = new double[defaultGeneLength];
     // Cache
     private int fitness = 0;
     private Random random = new Random();
@@ -11,16 +11,20 @@ public class Chromosome {
 
     public void generateIndividual() {
         for (int i = 0; i < size(); i++) {
-            float gene = random.nextFloat() * 1000.0f;
+            double gene = random.nextDouble() * 1000.0f;
             genes[i] = gene;
         }
     }
 
-    public float getGene(int index) {
+    public double getGene(int index) {
         return genes[index];
     }
 
-    public void setGene(int index, float value) {
+    public double[] getGenes() {
+        return genes;
+    }
+
+    public void setGene(int index, double value) {
         genes[index] = value;
         fitness = 0;
     }
@@ -32,8 +36,13 @@ public class Chromosome {
 
     public int getFitness() {
         if (fitness == 0) {
-            fitness = FitnessCalc.getFitness(this);
+            int totalFitness = 0;
+            for(int i =0 ; i<11; i++){
+                totalFitness += PlayerSkeleton.run(genes);
+            }
+            fitness = totalFitness/10;
         }
+
         return fitness;
     }
 
