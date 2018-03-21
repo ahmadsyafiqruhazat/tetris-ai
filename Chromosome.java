@@ -1,6 +1,6 @@
 import java.util.Random;
 
-public class Individual {
+public class Chromosome {
 
     static int defaultGeneLength = 64;
     private float[] genes = new float[defaultGeneLength];
@@ -9,18 +9,11 @@ public class Individual {
     private Random random = new Random();
 
 
-    // Create a random individual
     public void generateIndividual() {
         for (int i = 0; i < size(); i++) {
             float gene = random.nextFloat() * 1000.0f;
             genes[i] = gene;
         }
-    }
-
-    /* Getters and setters */
-    // Use this if you want to create individuals with different gene lengths
-    public static void setDefaultGeneLength(int length) {
-        defaultGeneLength = length;
     }
 
     public float getGene(int index) {
