@@ -61,11 +61,6 @@ public class PlayerSkeleton {
   
   public static void main(String[] args) {
     State s = new State();
-    pOrients = s.getpOrients();
-    pWidth = s.getpWidth();
-    pBottom = s.getpBottom();
-    pHeight = s.getpHeight();
-    pTop = s.getpTop();
     
     new TFrame(s);
     PlayerSkeleton p = new PlayerSkeleton();
