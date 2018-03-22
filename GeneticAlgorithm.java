@@ -2,13 +2,6 @@ import java.util.Random;
 
 public class GeneticAlgorithm {
 
-    /* GA parameters */
-    private static final double uniformRate = 0.5;
-    private static final double mutationRate = 0.015;
-    private static final int tournamentSize = 5;
-    private static final boolean elitism = true;
-    public static final int MAX_LOST_GENERATION = 20;
-
 
     /* Public methods */
 
@@ -17,13 +10,13 @@ public class GeneticAlgorithm {
         Population newPopulation = new Population(pop.size(), false);
 
         // Keep our best individual
-        if (elitism) {
+        if (Constants.elitism) {
             newPopulation.saveIndividual(0, pop.getFittest());
         }
 
         // Crossover population
         int elitismOffset;
-        if (elitism) {
+        if (Constants.elitism) {
             elitismOffset = 1;
         } else {
             elitismOffset = 0;
@@ -51,7 +44,7 @@ public class GeneticAlgorithm {
         // Loop through genes
         for (int i = 0; i < indiv1.size(); i++) {
             // Crossover
-            if (Math.random() <= uniformRate) {
+            if (Math.random() <= Constants.uniformRate) {
                 newSol.setGene(i, indiv1.getGene(i));
             } else {
                 newSol.setGene(i, indiv2.getGene(i));
@@ -64,7 +57,7 @@ public class GeneticAlgorithm {
     private static void mutate(Chromosome indiv) {
         // Loop through genes
         for (int i = 0; i < indiv.size(); i++) {
-            if (Math.random() <= mutationRate) {
+            if (Math.random() <= Constants.mutationRate) {
                 // Create random gene
                 Random random = new Random();
                 float gene = random.nextFloat() * 1000.0f;
@@ -76,9 +69,9 @@ public class GeneticAlgorithm {
     // Select chromosomes for crossover
     private static Chromosome tournamentSelection(Population pop) {
         // Create a tournament population
-        Population tournament = new Population(tournamentSize, false);
+        Population tournament = new Population(Constants.tournamentSize, false);
         // For each place in the tournament get a random individual
-        for (int i = 0; i < tournamentSize; i++) {
+        for (int i = 0; i < Constants.tournamentSize; i++) {
             int randomId = (int) (Math.random() * pop.size());
             tournament.saveIndividual(i, pop.getIndividual(randomId));
         }
@@ -99,7 +92,7 @@ public class GeneticAlgorithm {
             if(maxFitness > myPop.getFittest().getFitness()){
                 lostGeneration++;
             }
-            if(lostGeneration> MAX_LOST_GENERATION){
+            if(lostGeneration> Constants.MAX_LOST_GENERATION){
                 break;
             }
             generationCount++;
