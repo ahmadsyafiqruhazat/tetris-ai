@@ -15,6 +15,7 @@ public class PlayerSkeleton {
   private static int[][] pHeight;
   private static int[][][] pBottom;
   private static int[][][] pTop;
+  private double[] weights;
   
 
   //implement this function to have a working system
@@ -57,24 +58,6 @@ public class PlayerSkeleton {
     
     // System.out.println(bestMove);
     return bestMove;
-  }
-  
-  public static void main(String[] args) {
-    State s = new State();
-    
-    new TFrame(s);
-    PlayerSkeleton p = new PlayerSkeleton();
-    while(!s.hasLost()) {
-      s.makeMove(p.pickMove(s,s.legalMoves()));
-      s.draw();
-      s.drawNext(0,0);
-      try {
-        Thread.sleep(1); 
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-    }
-    System.out.println("You have completed "+s.getRowsCleared()+" rows.");
   }
   
   private class WorkingState extends State {
@@ -223,13 +206,13 @@ public class PlayerSkeleton {
       this.field = s.getField();
       this.top = s.getTop();
       float heuristic = 0;
-      
-      heuristic -= (float)(weights[0]*getMaxHeight());
-      heuristic -= (float)(weights[1]*getTotalHeight());
-      heuristic -= (float)(weights[2]*getBumpiness());
-      heuristic -= (float)(weights[3]*getHoles());
-      
-      return heuristic;  
+
+      heuristic -= (float) (weights[0] * getMaxHeight());
+      heuristic -= (float) (weights[1] * getTotalHeight());
+      heuristic -= (float) (weights[2] * getBumpiness());
+      heuristic -= (float) (weights[3] * getHoles());
+
+      return heuristic;
     }
 
     public int getMaxHeight() {
@@ -245,29 +228,68 @@ public class PlayerSkeleton {
       int holes = 0;
       int holeMultiplier = 1; // holes on top of holes are really bad
       int holeDepth = 1; // total number of blocks above holes
-      
-      for (int j = 0; j < field[0].length; j++){
-        for (int i = top[j]-2; i >= 0; i--){
-          if (field[i][j] == 0){
+
+      for (int j = 0; j < field[0].length; j++) {
+        for (int i = top[j] - 2; i >= 0; i--) {
+          if (field[i][j] == 0) {
             holes += holeMultiplier;
-            holeMultiplier++;  
+            holeMultiplier++;
             continue;
           }
-          holeDepth++;  
+          holeDepth++;
         }
-        holeMultiplier = 1;  
-      } 
+        holeMultiplier = 1;
+      }
       // System.out.println(holes); 
       return holes + holeDepth;
     }
 
     public int getBumpiness() {
       int total = 0;
-      for (int i = 0; i < top.length - 1; i++){
-        total += Math.abs(top[i] - top[i+1]);
-      }  
+      for (int i = 0; i < top.length - 1; i++) {
+        total += Math.abs(top[i] - top[i + 1]);
+      }
       return total;
     }
+  }
+
+  private void setWeights(double[] weights){
+    this.weights = weights;
+  }
+
+  public static int run(double[] weights){
+    State s = new State();
+    pOrients = s.getpOrients();
+    pWidth = s.getpWidth();
+    pBottom = s.getpBottom();
+    pHeight = s.getpHeight();
+    pTop = s.getpTop();
+
+    PlayerSkeleton p = new PlayerSkeleton();
+    p.setWeights(weights);
+    while(!s.hasLost() && s.getTurnNumber()<501) {
+      s.makeMove(p.pickMove(s,s.legalMoves()));
+    }
+    return s.getRowsCleared();
+  }
+  
+
+  public static void main(String[] args) {
+    State s = new State();
+
+    new TFrame(s);
+    PlayerSkeleton p = new PlayerSkeleton();
+    while(!s.hasLost()) {
+      s.makeMove(p.pickMove(s,s.legalMoves()));
+      s.draw();
+      s.drawNext(0,0);
+      try {
+        Thread.sleep(1);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+    System.out.println("You have completed "+s.getRowsCleared()+" rows.");
   }
 }
 
