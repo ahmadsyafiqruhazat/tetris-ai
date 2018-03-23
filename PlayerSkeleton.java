@@ -23,7 +23,7 @@ public class PlayerSkeleton {
     float maxHeuristic = -9999;
     int nextPiece = s.getNextPiece();
     WorkingState ws = new WorkingState(s);
-    float[] weights = {1.0f, 1.0f, 1.0f, 1.0f};
+    float[] weights = {1.0f, 1.0f, 1.0f, 2.0f};
     Heuristics h = new Heuristics(weights);
 
     WorkingState nextWs;
@@ -61,6 +61,11 @@ public class PlayerSkeleton {
   
   public static void main(String[] args) {
     State s = new State();
+    pOrients = s.getpOrients();
+    pWidth = s.getpWidth();
+    pBottom = s.getpBottom();
+    pHeight = s.getpHeight();
+    pTop = s.getpTop();
     
     new TFrame(s);
     PlayerSkeleton p = new PlayerSkeleton();
@@ -130,6 +135,7 @@ public class PlayerSkeleton {
     public void makeSpecificMove(int nextPiece, int orient, int slot) {
       turn++;
       //height if the first column makes contact
+      System.out.println(nextPiece + " " + orient + " " + slot);
       int height = top[slot]-pBottom[nextPiece][orient][0];
       //for each column beyond the first in the piece
       for(int c = 1; c < pWidth[nextPiece][orient];c++) {
