@@ -1,5 +1,9 @@
 import java.lang.*;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
 
 public class PlayerSkeleton {
 
@@ -16,6 +20,10 @@ public class PlayerSkeleton {
   private static int[][][] pBottom;
   private static int[][][] pTop;
   private double[] weights;
+
+  // ForkJoinPool for concurrent execution
+  private ForkJoinPool concurrentExecutor;
+  private MoveEvaluator evaluator;
   
 
   //implement this function to have a working system
@@ -38,28 +46,51 @@ public class PlayerSkeleton {
           maxHeuristic = heuristicMove;  
         }    
       }
-
-
-      // int[][] field = new int[ROWS][COLS];
-      // int[] top = new int[COLS];
-      // copyField(field, s.getField());
-      // copyTop(top, s.getTop());
-      
-      // if (makeMove(field, top, turn, nextPiece, legalMoves[i][ORIENT], legalMoves[i][SLOT])) {
-      //   heuristicMove = getHeuristic(field, top);
-      // }
-      
-      // it would be great if we could make a copy of state
-      // int[][] newState = s.testMove(legalMoves[i][ORIENT], legalMoves[i][SLOT]);
-      // float heuristicMove = getHeuristic(newState);
-        
-      // System.out.println(i + ", " + heuristicMove);
     }
-    
-    // System.out.println(bestMove);
+
     return bestMove;
   }
-  
+
+  public PlayerSkeleton(ForkJoinPool forkJoinPool) {
+    this.concurrentExecutor = forkJoinPool;
+  }
+
+  public static final MoveEvaluator[] EVALUATORS;
+  static {
+        ArrayList<MoveEvaluator> evaluators = new ArrayList<MoveEvaluator>();
+        evaluators.add(new MaxHeight());
+        evaluators.add(new TotalHeight());
+        evaluators.add(new Bumpiness());
+        evaluators.add(new Holes());
+
+        EVALUATORS = evaluators.toArray(new MoveEvaluator[evaluators.size()]);
+  }
+
+
+  public static void main(String[] args) {
+    State s = new State();
+
+    new TFrame(s);
+
+    ForkJoinPool concurrentExecutor = new ForkJoinPool();
+    PlayerSkeleton p = new PlayerSkeleton(concurrentExecutor);
+    while(!s.hasLost()) {
+      s.makeMove(p.pickMove(s,s.legalMoves()));
+      s.draw();
+      s.drawNext(0,0);
+      try {
+        Thread.sleep(1);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+    System.out.println("You have completed "+s.getRowsCleared()+" rows.");
+  }
+
+
+  /**
+   * A working State for running the game
+   */
   private class WorkingState extends State {
     public int[][] field = new int[ROWS][COLS];
     public int[] top = new int[COLS];
@@ -74,6 +105,13 @@ public class PlayerSkeleton {
     public WorkingState(int piece, int orient, int slot, State state) {
       this(state);
       makeSpecificMove(piece, orient, slot);
+    }
+
+    public WorkingState(int[][] field, int[] top, int turn, int cleared) {
+      this.field = field;
+      this.top = top;
+      this.turn = turn;
+      this.cleared = cleared;
     }
 
     private void cloneScores(State s, boolean isStart) {
@@ -193,7 +231,75 @@ public class PlayerSkeleton {
     }
   }
 
-  private class Heuristics {
+
+    /**
+     *
+     *
+     * Evaluators for different heuristics
+     *
+     */
+
+
+    public static class MaxHeight implements MoveEvaluator {
+        @Override
+        public Float evaluate(MoveResult result) {
+            int[] top = result.getState().getTop();
+
+            return (float) Arrays.stream(top).max().getAsInt();
+        }
+    }
+
+    public static class TotalHeight implements MoveEvaluator {
+        @Override
+        public Float evaluate(MoveResult result) {
+            int[] top = result.getState().getTop();
+
+            return (float) Arrays.stream(top).sum();
+        }
+    }
+
+    public static class Bumpiness implements MoveEvaluator {
+        @Override
+        public Float evaluate(MoveResult result) {
+            int[] top = result.getState().getTop();
+            int total = 0;
+            for (int i = 0; i < top.length - 1; i++) {
+                total += Math.abs(top[i] - top[i + 1]);
+            }
+            return (float) total;
+        }
+    }
+
+    public static class Holes implements MoveEvaluator {
+        @Override
+        public Float evaluate(MoveResult result) {
+            int[] top = result.getState().getTop();
+            int holes = 0;
+            int holeMultiplier = 1; // holes on top of holes are really bad
+            int holeDepth = 1; // total number of blocks above holes
+
+            for (int j = 0; j < field[0].length; j++) {
+                for (int i = top[j] - 2; i >= 0; i--) {
+                    if (field[i][j] == 0) {
+                        holes += holeMultiplier;
+                        holeMultiplier++;
+                        continue;
+                    }
+                    holeDepth++;
+                }
+                holeMultiplier = 1;
+            }
+            // System.out.println(holes);
+            return (float) (holes + holeDepth);
+        }
+    }
+
+
+    /**
+     * A class to get all the required heuristics
+     */
+
+    private class Heuristics {
     public int[][] field;
     public int[] top;
     public float[] weights;
@@ -265,31 +371,243 @@ public class PlayerSkeleton {
     pHeight = s.getpHeight();
     pTop = s.getpTop();
 
-    PlayerSkeleton p = new PlayerSkeleton();
+    ForkJoinPool concurrentExecutor = new ForkJoinPool();
+    PlayerSkeleton p = new PlayerSkeleton(concurrentExecutor);
     p.setWeights(weights);
     while(!s.hasLost() && s.getTurnNumber()<501) {
       s.makeMove(p.pickMove(s,s.legalMoves()));
     }
     return s.getRowsCleared();
   }
-  
 
-  public static void main(String[] args) {
-    State s = new State();
+  public static class ConcurrentExecutor {
 
-    new TFrame(s);
-    PlayerSkeleton p = new PlayerSkeleton();
-    while(!s.hasLost()) {
-      s.makeMove(p.pickMove(s,s.legalMoves()));
-      s.draw();
-      s.drawNext(0,0);
-      try {
-        Thread.sleep(1);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
+    private final ForkJoinPool forkJoinPool;
+
+    public ConcurrentExecutor(ForkJoinPool forkJoinPool) {
+      this.forkJoinPool = forkJoinPool;
     }
-    System.out.println("You have completed "+s.getRowsCleared()+" rows.");
+
+    public <Src, Dst> void evaluate(Evaluator<Src, Dst> evaluator,
+                                    Iterable<Src> inputs, Collection<Dst> outputs) {
+      forkJoinPool
+              .invoke(new EvaluateTask<Src, Dst>(evaluator, inputs, outputs));
+    }
+
+    public <SrcT, IntT, DstT> DstT execute(Evaluator<SrcT, IntT> evaluator,
+                                           Executor<IntT, DstT> executor, Iterable<SrcT> inputs) {
+
+      return forkJoinPool.invoke(new ExecuteTask<SrcT, IntT, DstT>(
+              evaluator, executor, inputs));
+    }
+
   }
+
+  public interface Evaluator<SrcT, DstT> {
+    public DstT evaluate(SrcT input);
+  }
+
+  public interface Executor<SrcT, DstT> {
+    public DstT execute(Iterable<SrcT> inputs);
+  }
+
+
+  public static class EvaluateTask<SrcT, DstT> extends ForkJoinTask<Void> {
+    public EvaluateTask(Evaluator<SrcT, DstT> evaluator, Iterable<SrcT> inputs,
+                        Collection<DstT> outputs) {
+      this.evaluator = evaluator;
+      this.inputs = inputs;
+      this.outputs = outputs;
+    }
+
+    @Override
+    protected boolean exec() {
+      ArrayList<ForkJoinTask<DstT>> applyTasks = new ArrayList<ForkJoinTask<DstT>>();
+      for (SrcT input : inputs) {
+        applyTasks.add(new ApplyTask(input));
+      }
+      invokeAll(applyTasks);
+
+      for (ForkJoinTask<DstT> applyTask : applyTasks) {
+        outputs.add(applyTask.join());
+      }
+
+      return true;
+    }
+
+    @Override
+    public Void getRawResult() {
+      return null;
+    }
+
+    @Override
+    protected void setRawResult(Void value) {
+    }
+
+    private final Evaluator<SrcT, DstT> evaluator;
+    private final Iterable<SrcT> inputs;
+    private final Collection<DstT> outputs;
+    private static final long serialVersionUID = 1L;
+
+    private class ApplyTask extends ForkJoinTask<DstT> {
+      public ApplyTask(SrcT input) {
+        this.input = input;
+      }
+
+      @Override
+      protected boolean exec() {
+        setRawResult(evaluator.evaluate(input));
+        return true;
+      }
+
+      @Override
+      public DstT getRawResult() {
+        return output;
+      }
+
+      @Override
+      protected void setRawResult(DstT value) {
+        output = value;
+      }
+
+      private final SrcT input;
+      private DstT output;
+
+      private static final long serialVersionUID = 1L;
+    }
+  }
+
+  public static class ExecuteTask<SrcT, IntT, DstT> extends
+          ForkJoinTask<DstT> {
+    public ExecuteTask(Evaluator<SrcT, IntT> evaluator,
+                       Executor<IntT, DstT> executor, Iterable<SrcT> inputs) {
+      this.inputs = inputs;
+      this.evaluator = evaluator;
+      this.executor = executor;
+    }
+
+    @Override
+    protected boolean exec() {
+      // evaluate
+      ArrayList<IntT> evaluateResults = new ArrayList<IntT>();
+      EvaluateTask<SrcT, IntT> evaluateTask = new EvaluateTask<SrcT, IntT>(evaluator,
+              inputs, evaluateResults);
+      evaluateTask.invoke();
+      // execute
+      setRawResult(executor.execute(evaluateResults));
+
+      return true;
+    }
+
+    @Override
+    public DstT getRawResult() {
+      return output;
+    }
+
+    @Override
+    protected void setRawResult(DstT value) {
+      output = value;
+    }
+
+    private final Iterable<SrcT> inputs;
+    private DstT output = null;
+    private Evaluator<SrcT, IntT> evaluator;
+    private Executor<IntT, DstT> executor;
+    private static final long serialVersionUID = 1L;
+  }
+
+  /**
+   * A common interface for different kind of evaluator
+   */
+  public interface MoveEvaluator extends Evaluator<MoveResult, Float> {
+  }
+
+  private static class Move {
+    public Move(WorkingState state, int index, int piece,
+                int orientation, int position) {
+      this.state = state;
+      this.index = index;
+      this.piece = piece;
+      this.orientation = orientation;
+      this.position = position;
+    }
+
+    public WorkingState getState() {
+      return state;
+    }
+
+    public int getIndex() {
+      return index;
+    }
+
+    public int getPiece() {
+      return piece;
+    }
+
+    public int getOrientation() {
+      return orientation;
+    }
+
+    public int getPosition() {
+      return position;
+    }
+
+    private final WorkingState state;
+    private final int index;
+    private final int piece;
+    private final int orientation;
+    private final int position;
+  }
+
+  /**
+   * A simple class to hold the evaluation result of a move
+   */
+  public static class EvaluationResult {
+    public EvaluationResult(int move, float score) {
+      this.move = move;
+      this.score = score;
+    }
+
+    public int getMove() {
+      return move;
+    }
+
+    public float getScore() {
+      return score;
+    }
+
+    private final int move;
+    private final float score;
+  }
+
+  /**
+   * Result of a move, returned by WorkingState.move
+   */
+  public class MoveResult {
+    public MoveResult(int field[][], int top[], int turn, boolean lost,
+                      int rowsCleared) {
+      this.state = new WorkingState(field, top, turn, rowsCleared);
+      this.rowsCleared = rowsCleared;
+      this.lost = lost;
+    }
+
+    public WorkingState getState() {
+      return state;
+    }
+
+    public int getRowsCleared() {
+      return rowsCleared;
+    }
+
+    public boolean hasLost() {
+      return lost;
+    }
+
+    private final int rowsCleared;
+    private final boolean lost;
+    private final WorkingState state;
+  }
+
+
 }
 
