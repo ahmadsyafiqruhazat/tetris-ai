@@ -23,11 +23,14 @@ public class PlayerSkeleton {
   private static int[][][] pBottom;
   private static int[][][] pTop;
   private double[] weights;
-  private double[] maxWeights;
+  private double[] nextWeights;
 
   // ForkJoinPool for concurrent execution
-  private ForkJoinPool concurrentExecutor;
+  private ForkJoinPool forkJoinExecutor;
+  private ConcurrentExecutor concurrentExecutor;
   private MoveEvaluator evaluator;
+
+  private ArrayList<Move> possibleMoves = new ArrayList<Move>();
 
   public static void main(String[] args) {
       State s = new State();
@@ -86,16 +89,26 @@ public class PlayerSkeleton {
     return bestMove;
   }
 
-  public PlayerSkeleton(ForkJoinPool forkJoinPool) {
-    this.concurrentExecutor = forkJoinPool;
-    this.weights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
-    this.nextWeights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
-    this.evaluator = new WeightedSumEvaluator(EVALUATORS, weights)
+  public int pickMove(WorkingState state, int nextPiece, int[] legalMoves) {
+      possibleMoves.clear();
+      for (int i = 0; i < legalMoves.length; i++) {
+          int orientation = legalMoves[i][ORIENT];
+          int position = legalMoves[i][SLOT];
+          possibleMoves.add(new Move(state, i, nextPiece, orientation, position));
+      }
+      return concurrentExecutor.execute(EVAL_MOVE_FUNC, PICK_MOVE_FUNC, possibleMoves)
   }
 
-  public ConcurrentPlayerSkeleton(ForkJoinPool forkJoinPool, float[] weights) {
-      this.concurrentExecutor = new ConcurrentExecutor(forkJoinPool);
-      this.evaluator = new WeightedSumEvaluator(EVALUATORS, weights);
+  public PlayerSkeleton(ForkJoinPool forkJoinPool) {
+    this.forkJoinExecutor = forkJoinPool;
+    this.weights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
+    this.nextWeights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
+    this.evaluator = new WeightedSumEvaluator(EVALUATORS, weights, nextWeights)
+  }
+
+  public ConcurrentPlayerSkeleton(ForkJoinPool forkJoinPool, float[] weights, float[] nextWeights) {
+      this.forkJoinExecutor = new ConcurrentExecutor(forkJoinPool);
+      this.evaluator = new WeightedSumEvaluator(EVALUATORS, weights, nextWeights);
   }
 
   public static final MoveEvaluator[] EVALUATORS;
@@ -115,6 +128,38 @@ public class PlayerSkeleton {
         EVALUATORS = evaluators.toArray(new MoveEvaluator[evaluators.size()]);
   }
 
+  private final Evaluator<Move, EvaluationResult> EVAL_MOVE_FUNC = new Evaluator<Move, EvaluationResult>() {
+      @Override
+      public EvaluationResult evaluate(Move move) {
+          WorkingState state = move.getState();
+          MoveResult moveResult = state.makeSpecificMove(move.getPiece(),
+                  move.getOrientation(), move.getPosition());
+          float nextScore = getNextHeuristic(moveResult.getState(), nextWeights)
+          float score = evaluator.evaluate(moveResult) + nextScore;
+          return new EvaluationResult(move.getIndex(), score);
+      }
+
+  };
+
+
+  private static final Executor<EvaluationResult, Integer> PICK_MOVE_FUNC = new Executor<EvaluationResult,
+            Integer>() {
+      public Integer execute(Iterable<EvaluationResult> results) {
+          float maxScore = -Float.MAX_VALUE;
+          int move = -1;
+
+          for (EvaluationResult result : results) {
+              float score = result.getScore();
+              if (score > maxScore) {
+                  maxScore = score;
+                  move = result.getMove();
+              }
+          }
+
+          return move;
+      }
+
+  };
 
   
   public float getNextHeuristic(WorkingState ws, float[] weights){    
@@ -241,7 +286,7 @@ public class PlayerSkeleton {
       return clone;
     }
 
-    public void makeSpecificMove(int nextPiece, int orient, int slot) {
+    public MoveResult makeSpecificMove(int nextPiece, int orient, int slot) {
       turn++;
       //height if the first column makes contact
       // System.out.println(nextPiece + " " + orient + " " + slot);
@@ -302,6 +347,8 @@ public class PlayerSkeleton {
           }
         }
       }
+
+      return new MoveResult(field, top, turn, false, rowsCleared)
     }
 
     @Override
@@ -697,7 +744,7 @@ public class PlayerSkeleton {
         }
 
         @Override
-        public Float evaluate(MoveResult moveResult) {
+        public Float evaluate(MoveResult moeveResult) {
             float sum = 0.0f;
 
             for (int i = 0; i < evaluators.length; ++i) {
