@@ -1,5 +1,6 @@
 import java.lang.*;
 import java.util.Arrays;
+import java.util.ArrayList;
 
 import java.util.stream.IntStream;
 
@@ -19,6 +20,7 @@ public class PlayerSkeleton {
   private static int[][][] pBottom;
   private static int[][][] pTop;
   
+  private static ArrayList<Integer> bumpinessArray = new ArrayList<Integer>();
 
   //implement this function to have a working system
   public int pickMove(State s, int[][] legalMoves) {
@@ -26,8 +28,8 @@ public class PlayerSkeleton {
     float maxHeuristic = -19998;
     int nextPiece = s.getNextPiece();
     WorkingState ws = new WorkingState(s);
-    float[] weights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
-    float[] nextWeights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
+    float[] weights = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f};
+    float[] nextWeights = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f};
     Heuristics h = new Heuristics(weights);
 
     WorkingState nextWs;
@@ -63,6 +65,7 @@ public class PlayerSkeleton {
     }
     
     // System.out.println(bestMove);
+    
     return bestMove;
   }
   
@@ -147,6 +150,19 @@ public class PlayerSkeleton {
         e.printStackTrace();
       }
     }
+    int maxBumpiness = 0;
+    int totalBumpiness = 0;
+    
+    for (int b: bumpinessArray){
+      totalBumpiness += b;
+      if (b > maxBumpiness){
+        maxBumpiness = b;  
+      }  
+    }
+    
+    System.out.println("Max bumpiness: " + maxBumpiness);
+    System.out.println("Mean bumpiness: " + totalBumpiness/bumpinessArray.size());
+    
     System.out.println("You have completed "+s.getRowsCleared()+" rows.");
   }
   
@@ -311,16 +327,18 @@ public class PlayerSkeleton {
       int numHoleCols = holesArray[4];
       int concavity = getConcavity();
       
-      heuristic -= (float)(weights[0]*maxHeight);
-      heuristic -= (float)(weights[1]*totalHeight);
-      heuristic -= (float)(weights[2]*bumpiness);
-      heuristic -= (float)(weights[3]*numHoles);
-      heuristic -= (float)(weights[4]*maxHoleHeight);
-      heuristic -= (float)(weights[5]*holeDepth);
-      heuristic -= (float)(weights[6]*numHoleRows);
-      heuristic -= (float)(weights[7]*numHoleCols);
-      heuristic -= (float)(weights[8]*concavity);
-      heuristic += (float)(weights[9]*(float)rowsCleared);
+      heuristic -= (float)(weights[0]*maxHeight)/ROWS;  
+      heuristic -= (float)(weights[1]*totalHeight)/(ROWS*COLS);
+      heuristic -= (float)(weights[2]*bumpiness)/80;
+      heuristic -= (float)(weights[3]*numHoles)/400;
+      heuristic -= (float)(weights[4]*maxHoleHeight)/ROWS;
+      heuristic -= (float)(weights[5]*holeDepth)/200;
+      heuristic -= (float)(weights[6]*numHoleRows)/ROWS;
+      heuristic -= (float)(weights[7]*numHoleCols)/COLS;
+      heuristic -= (float)(weights[8]*concavity)/100;
+      heuristic += (float)(weights[9]*(float)rowsCleared)/4;
+      
+      // System.out.println((weights[8]*concavity)/100);
       
       return heuristic;  
     }
@@ -341,6 +359,7 @@ public class PlayerSkeleton {
       for (int j = 6; j < COLS; j++){
         concavity += top[5] - top[j];   
       }
+            
       return concavity;
     }
   
@@ -351,11 +370,15 @@ public class PlayerSkeleton {
       int[] colHoles = new int[COLS];
       int holeMultiplier = 1; // holes on top of holes are really bad
       int holeDepth = 1; // total number of blocks above holes
+      int totalHoleDepth = 0;
       
       for (int j = 0; j < field[0].length; j++){
         holeMultiplier = 1; 
+        holeDepth = 1;
         for (int i = top[j]-2; i >= 0; i--){
           if (field[i][j] == 0){
+            totalHoleDepth += holeDepth;
+            holeDepth = 0;
             holes += holeMultiplier;
             holeMultiplier++;
             if (top[j]>maxHoleHeight){
@@ -364,12 +387,15 @@ public class PlayerSkeleton {
             rowHoles[i] = 1;
             colHoles[j] = 1;
             continue;
+          } else {
+            holeDepth++;
           }
-          holeDepth++;  
+            
         } 
-      } 
-      // System.out.println(holes); 
-      int[] result = {holes, maxHoleHeight, holeDepth, IntStream.of(rowHoles).sum(), IntStream.of(colHoles).sum()};
+      }
+
+                  bumpinessArray.add(holes);
+      int[] result = {holes, maxHoleHeight, totalHoleDepth, IntStream.of(rowHoles).sum(), IntStream.of(colHoles).sum()};
       return result;
     }
 
@@ -377,7 +403,8 @@ public class PlayerSkeleton {
       int total = 0;
       for (int i = 0; i < top.length - 1; i++){
         total += Math.abs(top[i] - top[i+1]);
-      }  
+      }
+        
       return total;
     }
   }
