@@ -147,8 +147,8 @@ public class PlayerSkeleton {
           WorkingState state = move.getState();
           MoveResult moveResult = state.makeSpecificMove(move.getPiece(),
                   move.getOrientation(), move.getPosition());
-//          float nextScore = getNextHeuristic(moveResult.getState(), nextWeights);
-          float score = evaluator.evaluate(moveResult);
+          float nextScore = getNextHeuristic(moveResult.getState(), nextWeights);
+          float score = evaluator.evaluate(moveResult) + nextScore;
 //          float score = getNextHeuristic(state, weights);
           return new EvaluationResult(move.getIndex(), score);
       }
@@ -303,7 +303,11 @@ public class PlayerSkeleton {
     }
 
     public MoveResult makeSpecificMove(int nextPiece, int orient, int slot) {
-      turn++;
+
+      int[][] field = cloneField(this.field);
+      int[] top = cloneTop(this.top);
+      int turn = this.turn + 1;
+
       //height if the first column makes contact
       // System.out.println(nextPiece + " " + orient + " " + slot);
       int height = top[slot]-pBottom[nextPiece][orient][0];
@@ -315,7 +319,7 @@ public class PlayerSkeleton {
       //check if game ended
       if(height+pHeight[nextPiece][orient] >= ROWS) {
         lost = true;
-        return new MoveResult(field, top, turn, true, cleared);
+        return new MoveResult(field, top, turn, true, 0);
       }
 
       
