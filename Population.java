@@ -1,3 +1,5 @@
+import javafx.util.Pair;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -34,15 +36,17 @@ public class Population {
         return chromosomes.get(index);
     }
 
-    public Chromosome getFittest() {
+    public Pair<Chromosome,Integer> getFittest() {
         Chromosome fittest = chromosomes.get(0);
+        int pos=0;
         // Loop through chromosomes to find fittest
         for (int i = 0; i < size(); i++) {
             if (fittest.getFitness() <= getIndividual(i).getFitness()) {
                 fittest = getIndividual(i);
+                pos = i;
             }
         }
-        return fittest;
+        return new Pair<>(fittest,pos);
     }
 
     /* Public methods */
@@ -54,6 +58,10 @@ public class Population {
     // Save individual
     public void saveIndividual(Chromosome indiv) {
         chromosomes.add(indiv);
+    }
+
+    public void saveIndividual(Chromosome indiv,int index) {
+        chromosomes.add(index,indiv);
     }
 
     public ArrayList<Chromosome> getChromosomes() {

@@ -131,7 +131,7 @@ public class PlayerSkeleton {
         
         //from bottom to top of brick
         for(int h = height+pBottom[nextPiece][orient][i]; h < height+pTop[nextPiece][orient][i]; h++) {
-          System.out.println("h: " + h);
+          //System.out.println("h: " + h);
           field[h][i+slot] = turn;
         }
       }
