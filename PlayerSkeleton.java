@@ -42,8 +42,8 @@ public class PlayerSkeleton {
 
       new TFrame(s);
 
-      ForkJoinPool concurrentExecutor = new ForkJoinPool();
-      PlayerSkeleton p = new PlayerSkeleton(concurrentExecutor);
+      ForkJoinPool forkJoinPool = new ForkJoinPool();
+      PlayerSkeleton p = new PlayerSkeleton(forkJoinPool);
       while(!s.hasLost()) {
           s.makeMove(p.pickMove(s,s.legalMoves()));
           s.draw();
@@ -54,60 +54,70 @@ public class PlayerSkeleton {
               e.printStackTrace();
           }
       }
-      System.out.println("You have completed "+s.getRowsCleared()+" rows.");
+      System.out.println("You have completed " + s.getRowsCleared() + " rows.");
 
   }
 
-  //implement this function to have a working system
-  public int pickMove(State s, int[][] legalMoves) {
-    int bestMove = 0;
-    float maxHeuristic = -19998;
-    int nextPiece = s.getNextPiece();
-    WorkingState ws = new WorkingState(s);
-    float[] weights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
-    float[] nextWeights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
-    Heuristics h = new Heuristics(weights);
+//  //implement this function to have a working system
+//  public int pickMove(State s, int[][] legalMoves) {
+//    int bestMove = 0;
+//    float maxHeuristic = -19998;
+//    int nextPiece = s.getNextPiece();
+//    WorkingState ws = new WorkingState(s);
+//    double[] weights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
+//    double[] nextWeights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
+//    Heuristics h = new Heuristics(weights);
+//
+//    WorkingState nextWs;
+//
+//    for (int i = 0; i < legalMoves.length; i++){
+//      float heuristicMove = -19998;
+//
+//      nextWs = new WorkingState(nextPiece, legalMoves[i][ORIENT], legalMoves[i][SLOT], ws);
+//      if (!nextWs.lost) {
+//        heuristicMove = h.score(nextWs);
+//      }
+//
+//      heuristicMove += getNextHeuristic(nextWs, nextWeights);
+//
+//      if (heuristicMove > maxHeuristic){
+//        bestMove = i;
+//        maxHeuristic = heuristicMove;
+//      }
+//    }
+//
+//    return bestMove;
+//  }
 
-    WorkingState nextWs;
-
-    for (int i = 0; i < legalMoves.length; i++){
-      float heuristicMove = -19998;
-    
-      nextWs = new WorkingState(nextPiece, legalMoves[i][ORIENT], legalMoves[i][SLOT], ws);
-      if (!nextWs.lost) {
-        heuristicMove = h.score(nextWs);
-      }
-
-      heuristicMove += getNextHeuristic(nextWs, nextWeights);
-
-      if (heuristicMove > maxHeuristic){
-        bestMove = i;
-        maxHeuristic = heuristicMove;  
-      }
+    //implement this function to have a working system
+    public int pickMove(State s, int[][] legalMoves) {
+        int nextPiece = s.getNextPiece();
+        WorkingState currentState = new WorkingState(s);
+        return pickMove(currentState, nextPiece, legalMoves);
     }
 
-    return bestMove;
-  }
-
-  public int pickMove(WorkingState state, int nextPiece, int[] legalMoves) {
+  public int pickMove(WorkingState state, int nextPiece, int[][] legalMoves) {
       possibleMoves.clear();
       for (int i = 0; i < legalMoves.length; i++) {
           int orientation = legalMoves[i][ORIENT];
           int position = legalMoves[i][SLOT];
           possibleMoves.add(new Move(state, i, nextPiece, orientation, position));
       }
-      return concurrentExecutor.execute(EVAL_MOVE_FUNC, PICK_MOVE_FUNC, possibleMoves)
+      return concurrentExecutor.execute(EVAL_MOVE_FUNC, PICK_MOVE_FUNC, possibleMoves);
   }
 
   public PlayerSkeleton(ForkJoinPool forkJoinPool) {
     this.forkJoinExecutor = forkJoinPool;
-    this.weights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
-    this.nextWeights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
-    this.evaluator = new WeightedSumEvaluator(EVALUATORS, weights, nextWeights)
+    this.concurrentExecutor = new ConcurrentExecutor(forkJoinPool);
+    double[] newWeights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
+    double[] newNextWeights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
+    this.weights = newWeights;
+    this.nextWeights = newNextWeights;
+    this.evaluator = new WeightedSumEvaluator(EVALUATORS, weights, nextWeights);
   }
 
-  public ConcurrentPlayerSkeleton(ForkJoinPool forkJoinPool, float[] weights, float[] nextWeights) {
-      this.forkJoinExecutor = new ConcurrentExecutor(forkJoinPool);
+  public PlayerSkeleton(ForkJoinPool forkJoinPool, double[] weights, double[] nextWeights) {
+      this.concurrentExecutor = new ConcurrentExecutor(forkJoinPool);
       this.evaluator = new WeightedSumEvaluator(EVALUATORS, weights, nextWeights);
   }
 
@@ -134,7 +144,7 @@ public class PlayerSkeleton {
           WorkingState state = move.getState();
           MoveResult moveResult = state.makeSpecificMove(move.getPiece(),
                   move.getOrientation(), move.getPosition());
-          float nextScore = getNextHeuristic(moveResult.getState(), nextWeights)
+          float nextScore = getNextHeuristic(moveResult.getState(), nextWeights);
           float score = evaluator.evaluate(moveResult) + nextScore;
           return new EvaluationResult(move.getIndex(), score);
       }
@@ -162,7 +172,7 @@ public class PlayerSkeleton {
   };
 
   
-  public float getNextHeuristic(WorkingState ws, float[] weights){    
+  public float getNextHeuristic(WorkingState ws, double[] weights){
     int[][][] legalMoves = new int[N_PIECES][][];
     
     // generate legal moves
@@ -299,7 +309,7 @@ public class PlayerSkeleton {
       //check if game ended
       if(height+pHeight[nextPiece][orient] >= ROWS) {
         lost = true;
-        return;
+        return new MoveResult(field, top, turn, true, cleared);
       }
 
       
@@ -348,7 +358,7 @@ public class PlayerSkeleton {
         }
       }
 
-      return new MoveResult(field, top, turn, false, rowsCleared)
+      return new MoveResult(field, top, turn, false, rowsCleared);
     }
 
     @Override
@@ -469,7 +479,7 @@ public class PlayerSkeleton {
     public static class RowsCleared implements MoveEvaluator {
         @Override
         public Float evaluate(MoveResult result) {
-            return result.getRowsCleared();
+            return (float) result.getRowsCleared();
         }
     }
 
@@ -477,104 +487,104 @@ public class PlayerSkeleton {
     /**
      * A class to get all the required heuristics
      */
-//
-//    private class Heuristics {
-//    public int[][] field;
-//    public int[] top;
-//    public float[] weights;
-//    public int rowsCleared;
-//
-//    public Heuristics(float[] w) {
-//      this.weights = w;
-//    }
-//
-//    public float score(State s) {
-//      this.field = s.getField();
-//      this.top = s.getTop();
-//      this.rowsCleared = s.getRowsCleared();
-//      float heuristic = 0;
-//
-//      int maxHeight = getMaxHeight();
-//      int totalHeight =  getTotalHeight();
-//      int bumpiness = getBumpiness();
-//      int[] holesArray = getHoles();
-//      int numHoles = holesArray[0];
-//      int maxHoleHeight = holesArray[1];
-//      int holeDepth = holesArray[2];
-//      int numHoleRows = holesArray[3];
-//      int numHoleCols = holesArray[4];
-//      int concavity = getConcavity();
-//
-//      heuristic -= (float)(weights[0]*maxHeight);
-//      heuristic -= (float)(weights[1]*totalHeight);
-//      heuristic -= (float)(weights[2]*bumpiness);
-//      heuristic -= (float)(weights[3]*numHoles);
-//      heuristic -= (float)(weights[4]*maxHoleHeight);
-//      heuristic -= (float)(weights[5]*holeDepth);
-//      heuristic -= (float)(weights[6]*numHoleRows);
-//      heuristic -= (float)(weights[7]*numHoleCols);
-//      heuristic -= (float)(weights[8]*concavity);
-//      heuristic += (float)(weights[9]*(float)rowsCleared);
-//
-//      return heuristic;
-//    }
-//
-//    public int getMaxHeight() {
-//      return Arrays.stream(top).max().getAsInt();
-//    }
-//
-//    public int getTotalHeight() {
-//      return Arrays.stream(top).sum();
-//    }
-//
-//    public int getConcavity(){
-//      int concavity = 0;
-//      for (int j = 0; j < 4; j++){
-//        concavity += top[4] - top[j];
-//      }
-//      for (int j = 6; j < COLS; j++){
-//        concavity += top[5] - top[j];
-//      }
-//      return concavity;
-//    }
-//
-//    public int[] getHoles(){
-//      int holes = 0;
-//      int maxHoleHeight = 0;
-//      int[] rowHoles = new int[ROWS];
-//      int[] colHoles = new int[COLS];
-//      int holeMultiplier = 1; // holes on top of holes are really bad
-//      int holeDepth = 1; // total number of blocks above holes
-//
-//      for (int j = 0; j < field[0].length; j++){
-//        holeMultiplier = 1;
-//        for (int i = top[j]-2; i >= 0; i--){
-//          if (field[i][j] == 0){
-//            holes += holeMultiplier;
-//            holeMultiplier++;
-//            if (top[j]>maxHoleHeight){
-//              maxHoleHeight = top[j];
-//            }
-//            rowHoles[i] = 1;
-//            colHoles[j] = 1;
-//            continue;
-//          }
-//          holeDepth++;
-//        }
-//      }
-//      // System.out.println(holes);
-//      int[] result = {holes, maxHoleHeight, holeDepth, IntStream.of(rowHoles).sum(), IntStream.of(colHoles).sum()};
-//      return result;
-//    }
-//
-//    public int getBumpiness() {
-//      int total = 0;
-//      for (int i = 0; i < top.length - 1; i++) {
-//        total += Math.abs(top[i] - top[i + 1]);
-//      }
-//      return total;
-//    }
-//  }
+
+    private class Heuristics {
+    public int[][] field;
+    public int[] top;
+    public double[] weights;
+    public int rowsCleared;
+
+    public Heuristics(double[] w) {
+      this.weights = w;
+    }
+
+    public float score(State s) {
+      this.field = s.getField();
+      this.top = s.getTop();
+      this.rowsCleared = s.getRowsCleared();
+      float heuristic = 0;
+
+      int maxHeight = getMaxHeight();
+      int totalHeight =  getTotalHeight();
+      int bumpiness = getBumpiness();
+      int[] holesArray = getHoles();
+      int numHoles = holesArray[0];
+      int maxHoleHeight = holesArray[1];
+      int holeDepth = holesArray[2];
+      int numHoleRows = holesArray[3];
+      int numHoleCols = holesArray[4];
+      int concavity = getConcavity();
+
+      heuristic -= (float)(weights[0]*maxHeight);
+      heuristic -= (float)(weights[1]*totalHeight);
+      heuristic -= (float)(weights[2]*bumpiness);
+      heuristic -= (float)(weights[3]*numHoles);
+      heuristic -= (float)(weights[4]*maxHoleHeight);
+      heuristic -= (float)(weights[5]*holeDepth);
+      heuristic -= (float)(weights[6]*numHoleRows);
+      heuristic -= (float)(weights[7]*numHoleCols);
+      heuristic -= (float)(weights[8]*concavity);
+      heuristic += (float)(weights[9]*(float)rowsCleared);
+
+      return heuristic;
+    }
+
+    public int getMaxHeight() {
+      return Arrays.stream(top).max().getAsInt();
+    }
+
+    public int getTotalHeight() {
+      return Arrays.stream(top).sum();
+    }
+
+    public int getConcavity(){
+      int concavity = 0;
+      for (int j = 0; j < 4; j++){
+        concavity += top[4] - top[j];
+      }
+      for (int j = 6; j < COLS; j++){
+        concavity += top[5] - top[j];
+      }
+      return concavity;
+    }
+
+    public int[] getHoles(){
+      int holes = 0;
+      int maxHoleHeight = 0;
+      int[] rowHoles = new int[ROWS];
+      int[] colHoles = new int[COLS];
+      int holeMultiplier = 1; // holes on top of holes are really bad
+      int holeDepth = 1; // total number of blocks above holes
+
+      for (int j = 0; j < field[0].length; j++){
+        holeMultiplier = 1;
+        for (int i = top[j]-2; i >= 0; i--){
+          if (field[i][j] == 0){
+            holes += holeMultiplier;
+            holeMultiplier++;
+            if (top[j]>maxHoleHeight){
+              maxHoleHeight = top[j];
+            }
+            rowHoles[i] = 1;
+            colHoles[j] = 1;
+            continue;
+          }
+          holeDepth++;
+        }
+      }
+      // System.out.println(holes);
+      int[] result = {holes, maxHoleHeight, holeDepth, IntStream.of(rowHoles).sum(), IntStream.of(colHoles).sum()};
+      return result;
+    }
+
+    public int getBumpiness() {
+      int total = 0;
+      for (int i = 0; i < top.length - 1; i++) {
+        total += Math.abs(top[i] - top[i + 1]);
+      }
+      return total;
+    }
+  }
 
   private void setWeights(double[] weights){
     this.weights = weights;
@@ -737,14 +747,14 @@ public class PlayerSkeleton {
      * An evaluator which uses a weighted sum of features as score
      */
     public static class WeightedSumEvaluator implements MoveEvaluator {
-        public WeightedSumEvaluator(MoveEvaluator[] evaluators, float[] weights, float[] nextWeights) {
+        public WeightedSumEvaluator(MoveEvaluator[] evaluators, double[] weights, double[] nextWeights) {
             this.evaluators = evaluators;
             this.weights = weights;
-            this.nextWeights = nextWeights
+            this.nextWeights = nextWeights;
         }
 
         @Override
-        public Float evaluate(MoveResult moeveResult) {
+        public Float evaluate(MoveResult moveResult) {
             float sum = 0.0f;
 
             for (int i = 0; i < evaluators.length; ++i) {
@@ -767,8 +777,8 @@ public class PlayerSkeleton {
         }
 
         private final MoveEvaluator[] evaluators;
-        private final float[] weights;
-        private final float[] nextWeights;
+        private final double[] weights;
+        private final double[] nextWeights;
     }
 
   /**
@@ -844,7 +854,7 @@ public class PlayerSkeleton {
       this.state = new WorkingState(field, top, turn, rowsCleared);
       this.rowsCleared = rowsCleared;
       this.lost = lost;
-      this.holeStat = getHoles()
+      this.holeStat = getHoles();
     }
 
     public WorkingState getState() {
@@ -859,10 +869,11 @@ public class PlayerSkeleton {
       return lost;
     }
 
-    public boolean getHoleStat() { return holeStat; }
+    public int[] getHoleStat() { return holeStat; }
 
     public int[] getHoles(){
         int[] top = this.state.getTop();
+        int[][] field = this.state.getField();
         int holes = 0;
         int maxHoleHeight = 0;
         int[] rowHoles = new int[ROWS];
@@ -900,4 +911,3 @@ public class PlayerSkeleton {
 
 }
 
-}

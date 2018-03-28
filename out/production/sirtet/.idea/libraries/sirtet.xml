@@ -1,8 +1,8 @@
 <component name="libraryTable">
   <library name="sirtet">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/JEClasses.jar!/" />
       <root url="jar://$PROJECT_DIR$/PlayerSkeleton.jar!/" />
+      <root url="jar://$PROJECT_DIR$/JEClasses.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
