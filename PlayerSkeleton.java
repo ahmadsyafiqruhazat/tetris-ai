@@ -103,22 +103,23 @@ public class PlayerSkeleton {
     }
     
     // actual loop
+    // o(n*)
     for (int n = 0; n < N_PIECES; n++){
       for (int i = 0; i < legalMoves[n].length; i++){
         nextWs = new WorkingState(n, legalMoves[n][i][ORIENT], legalMoves[n][i][SLOT], ws);
-      
+
         double heuristicNextMove = -9999;
-      
+
         if (!nextWs.lost) {
           heuristicNextMove = nextH.score(nextWs);
         }
-      
+
         if (heuristicNextMove > nextHeuristic[n]){
           nextHeuristic[n] = heuristicNextMove;  
         }
       }  
     }
-    
+
     double total = 0;
     for (double n: nextHeuristic) {
       total += n;  
@@ -132,11 +133,11 @@ public class PlayerSkeleton {
   
   public static void main(String[] args) {
     State s = new State();
-    pOrients = s.getpOrients();
-    pWidth = s.getpWidth();
-    pBottom = s.getpBottom();
-    pHeight = s.getpHeight();
-    pTop = s.getpTop();
+    pOrients = State.getpOrients();
+    pWidth = State.getpWidth();
+    pBottom = State.getpBottom();
+    pHeight = State.getpHeight();
+    pTop = State.getpTop();
     
     new TFrame(s);
     PlayerSkeleton p = new PlayerSkeleton();
