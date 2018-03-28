@@ -7,6 +7,8 @@ import java.util.concurrent.ForkJoinTask;
 
 import java.util.stream.IntStream;
 
+import com.sun.rowset.internal.Row;
+
 public class PlayerSkeleton {
 
   public static final int COLS = 10;
@@ -103,6 +105,7 @@ public class PlayerSkeleton {
           int position = legalMoves[i][SLOT];
           possibleMoves.add(new Move(state, i, nextPiece, orientation, position));
       }
+      System.out.println("Num of possible moves: " + possibleMoves.size());
       return concurrentExecutor.execute(EVAL_MOVE_FUNC, PICK_MOVE_FUNC, possibleMoves);
   }
 
@@ -146,6 +149,7 @@ public class PlayerSkeleton {
                   move.getOrientation(), move.getPosition());
 //          float nextScore = getNextHeuristic(moveResult.getState(), nextWeights);
           float score = evaluator.evaluate(moveResult);
+//          float score = getNextHeuristic(state, weights);
           return new EvaluationResult(move.getIndex(), score);
       }
 
@@ -166,6 +170,7 @@ public class PlayerSkeleton {
                   move = result.getMove();
               }
           }
+          System.out.println("new maxScore: " + maxScore + " move: " + move);
 
           return move;
       }
@@ -748,6 +753,11 @@ public class PlayerSkeleton {
      * An evaluator which uses a weighted sum of features as score
      */
     public static class WeightedSumEvaluator implements MoveEvaluator {
+
+        private final MoveEvaluator[] evaluators;
+        private final double[] weights;
+        private final double[] nextWeights;
+
         public WeightedSumEvaluator(MoveEvaluator[] evaluators, double[] weights, double[] nextWeights) {
             this.evaluators = evaluators;
             this.weights = weights;
@@ -758,9 +768,13 @@ public class PlayerSkeleton {
         public Float evaluate(MoveResult moveResult) {
             float sum = 0.0f;
 
-            for (int i = 0; i < evaluators.length; ++i) {
+            for (int i = 0; i < evaluators.length - 1; ++i) {
                 float score = evaluators[i].evaluate(moveResult);
-                sum += score * weights[i];
+                if (evaluators[i] instanceof RowsCleared) {
+                    sum += score * weights[i];
+                } else {
+                    sum -= score * weights[i];
+                }
             }
 
             return sum;
@@ -777,9 +791,6 @@ public class PlayerSkeleton {
             return sum;
         }
 
-        private final MoveEvaluator[] evaluators;
-        private final double[] weights;
-        private final double[] nextWeights;
     }
 
   /**
