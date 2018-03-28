@@ -19,8 +19,6 @@ public class PlayerSkeleton {
   private static int[][] pHeight;
   private static int[][][] pBottom;
   private static int[][][] pTop;
-  
-  private static ArrayList<Integer> bumpinessArray = new ArrayList<Integer>();
 
   //implement this function to have a working system
   public int pickMove(State s, int[][] legalMoves) {
@@ -159,9 +157,6 @@ public class PlayerSkeleton {
         maxBumpiness = b;  
       }  
     }
-    
-    System.out.println("Max bumpiness: " + maxBumpiness);
-    System.out.println("Mean bumpiness: " + totalBumpiness/bumpinessArray.size());
     
     System.out.println("You have completed "+s.getRowsCleared()+" rows.");
   }
@@ -394,7 +389,6 @@ public class PlayerSkeleton {
         } 
       }
 
-                  bumpinessArray.add(holes);
       int[] result = {holes, maxHoleHeight, totalHoleDepth, IntStream.of(rowHoles).sum(), IntStream.of(colHoles).sum()};
       return result;
     }
