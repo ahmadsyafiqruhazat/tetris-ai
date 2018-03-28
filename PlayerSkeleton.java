@@ -144,8 +144,8 @@ public class PlayerSkeleton {
           WorkingState state = move.getState();
           MoveResult moveResult = state.makeSpecificMove(move.getPiece(),
                   move.getOrientation(), move.getPosition());
-          float nextScore = getNextHeuristic(moveResult.getState(), nextWeights);
-          float score = evaluator.evaluate(moveResult) + nextScore;
+//          float nextScore = getNextHeuristic(moveResult.getState(), nextWeights);
+          float score = evaluator.evaluate(moveResult);
           return new EvaluationResult(move.getIndex(), score);
       }
 
@@ -155,11 +155,12 @@ public class PlayerSkeleton {
   private static final Executor<EvaluationResult, Integer> PICK_MOVE_FUNC = new Executor<EvaluationResult,
             Integer>() {
       public Integer execute(Iterable<EvaluationResult> results) {
-          float maxScore = -Float.MAX_VALUE;
+          float maxScore = -19998;
           int move = -1;
 
           for (EvaluationResult result : results) {
               float score = result.getScore();
+//              System.out.println("new score: " + score + " maxScore: " + maxScore);
               if (score > maxScore) {
                   maxScore = score;
                   move = result.getMove();
