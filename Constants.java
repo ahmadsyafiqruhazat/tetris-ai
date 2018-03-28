@@ -7,6 +7,9 @@ public class Constants {
     static final double mutationRate = 0.015;
     static final int POPULATION_SIZE = 10;
     static final int NUM_GAMES = 10;
-    public static int defaultGeneLength = 4;
-    public static int MAX_ITERATIONS = 10;
+    // Number of runs averaged to get the fitness
+    static final int NUM_RUNS = 10;
+    public static int defaultGeneLength = 10;
+    public static int MAX_ITERATIONS = 100;
+    public static int PSO_ITERATIONS = 10;
 }

@@ -1,11 +1,9 @@
 import java.util.Random;
 
 public class Particle {
-    // Number of runs averaged to get the fitness
-    private static final int NUM_RUNS = 16;
     private static final int INIT_FITNESS = 0;
 
-    public static final int DIMENSIONS = 4;
+    public static final int DIMENSIONS = 10;
 
     public static double[] MAX;
     public static double[] MIN;
@@ -74,10 +72,10 @@ public class Particle {
     // TODO: Something other than average?
     private void updateFitness() {
         int sum = 0;
-        for (int i = 0; i < NUM_RUNS; i++) {
+        for (int i = 0; i < Constants.NUM_RUNS; i++) {
             sum += getOneFitness();
         }
-        fitness = sum / NUM_RUNS;
+        fitness = sum / Constants.NUM_RUNS;
     }
 
     private void updatePBest() {

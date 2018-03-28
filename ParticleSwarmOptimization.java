@@ -2,12 +2,12 @@ import java.util.ArrayList;
 
 public class ParticleSwarmOptimization {
 
-    private static final double[] MAX = {20.0, 20.0, 20.0, 20.0};
-    private static final double[] MIN = {-20.0, -20.0, -20.0, -20.0};
+    private static final double[] MAX = {20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0};
+    private static final double[] MIN = {-20.0, -20.0, -20.0, -20.0, -20.0, -20.0, -20.0, -20.0, -20.0, -20.0 };
     private static final double INERTIA_WEIGHT = 1.0;
     private static final double COGNITIVE_WEIGHT = 2.0;
     private static final double SOCIAL_WEIGHT = 2.5;
-    private static final double[] gBest = {0.0, 0.0, 0.0, 0.0};
+    private static final double[] gBest = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     private static final int gBestFitness = 0;
 
     private static final int NUM_ITERATIONS = 10;
@@ -42,10 +42,10 @@ public class ParticleSwarmOptimization {
     }
 
     public void printSwarmData() {
-        for (int i = 0; i < particles.length; i++) {
-            printParticleData(i);
-            System.out.println("---");
-        }
+//        for (int i = 0; i < particles.length; i++) {
+//            printParticleData(i);
+//            System.out.println("---");
+//        }
 
         for (int i = 0; i < Particle.gBest.length; i++) {
             System.out.print(Particle.gBest[i] + " ");
@@ -84,7 +84,7 @@ public class ParticleSwarmOptimization {
     }
 
     public Population run() {
-        runAndPrintIterations(NUM_ITERATIONS);
+        runAndPrintIterations(Constants.PSO_ITERATIONS);
         Population newPop = new Population(Constants.POPULATION_SIZE,false);
         ArrayList<Chromosome> chromosomes = newPop.getChromosomes();
         for (Particle par: particles) {

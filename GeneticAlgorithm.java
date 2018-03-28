@@ -1,5 +1,6 @@
 import javafx.util.Pair;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Random;
 
@@ -92,7 +93,7 @@ public class GeneticAlgorithm {
         int maxFitness = 0;
 
 
-        while (true) {
+   //     while (true) {
 //            System.out.println("getFitness: " +myPop.getFittest().getFitness());
             if(maxFitness > myPop.getFittest().getKey().getFitness()){
                 lostGeneration++;
@@ -101,17 +102,18 @@ public class GeneticAlgorithm {
                 maxFitness = myPop.getFittest().getKey().getFitness();
                 lostGeneration = 0;
             }
-            if(lostGeneration> Constants.MAX_LOST_GENERATION){
-                break;
-            }
+//            if(lostGeneration> Constants.MAX_LOST_GENERATION){
+//                break;
+//            }
             generationCount++;
             System.out.println("Generation: " + generationCount + " Fittest: " + myPop.getFittest().getKey().getFitness() + " Max " + maxFitness);
             myPop = evolvePopulation(myPop);
 //            System.out.println("Lost " + lostGeneration + " Max: "+  maxFitness);
-        }
+//        }
         System.out.println("Generation: " + generationCount);
         System.out.println("Genes:");
-        System.out.println(myPop.getFittest());
+        System.out.println(Arrays.toString(myPop.getFittest().getKey().getGenes()));
+        System.out.println("///////////////////");
         return myPop;
 
     }
