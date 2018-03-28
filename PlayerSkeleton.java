@@ -386,4 +386,28 @@ public class PlayerSkeleton {
     }
   }
 
+  class Possibility implements Comparable<Possibility> {
+    public int orient, slot;
+    public double score;
+
+    public Possibility(int orient, int slot) {
+      this.orient = orient;
+      this.slot = slot;
+    }
+
+    public Possibility(int orient, int slot, double score) {
+      this.orient = orient;
+      this.slot = slot;
+      this.score = score;
+    }
+
+    public void setScore(double score) {
+      this.score = score;
+    }
+
+    @Override
+    public int compareTo(Possibility pos) {
+      return (int)(this.score - pos.score);
+    }
+  }
 }
