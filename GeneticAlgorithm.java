@@ -15,10 +15,10 @@ public class GeneticAlgorithm {
         // Loop over the population size and create new chromosomes with
         // crossover
 
-        for (int i = 0; i <(int)(Constants.NUM_OFFSPRING*pop.size()); i++) {
-            Pair<Chromosome,Integer> indiv1 = tournamentSelection(pop);
-            Pair<Chromosome,Integer> indiv2 = tournamentSelection(pop);
-            Chromosome[] newIndiv = crossover(indiv1.getKey(), indiv2.getKey());
+        for (int i = 0; i <(int)(Constants.NUM_OFFSPRING*Constants.POPULATION_SIZE); i++) {
+            Pair<Particle,Integer> indiv1 = tournamentSelection(pop);
+            Pair<Particle,Integer> indiv2 = tournamentSelection(pop);
+            Particle[] newIndiv = crossover(indiv1.getKey(), indiv2.getKey());
             pop.saveIndividual(newIndiv[0],indiv1.getValue());
             pop.saveIndividual(newIndiv[1],indiv2.getValue());
 
@@ -34,9 +34,9 @@ public class GeneticAlgorithm {
 
     // Crossover chromosomes
 
-    private static Chromosome[] crossover(Chromosome indiv1, Chromosome indiv2) {
-        Chromosome newSol1 = new Chromosome();
-        Chromosome newSol2 = new Chromosome();
+    private static Particle[] crossover(Particle indiv1, Particle indiv2) {
+        Particle newSol1 = new Particle();
+        Particle newSol2 = new Particle();
 
         double[] newGene1 = newSol1.getGenes();
         double[] newGene2 = newSol2.getGenes();
@@ -51,39 +51,39 @@ public class GeneticAlgorithm {
             System.arraycopy(indiv1.getGenes(), crossoverPoint, newGene1, crossoverPoint, length-crossoverPoint);
 
         } else {
-            return new Chromosome[] { indiv1,indiv2};
+            return new Particle[] { indiv1,indiv2};
         }
 
-        return new Chromosome[] { newSol1,newSol2};
+        return new Particle[] { newSol1,newSol2};
     }
 
     // Mutate an individual
-    private static void mutate(Chromosome indiv) {
+    private static void mutate(Particle indiv) {
         // Loop through genes
         for (int i = 0; i < indiv.size(); i++) {
             if (Math.random() <= Constants.mutationRate) {
                 // Create random gene
                 Random random = new Random();
-                double gene = random.nextDouble() * 1000.0f;
-                indiv.setGene(i, gene);
+                double gene = random.nextDouble() * 0.4 - 0.2;
+                indiv.mutateGene(i, gene);
             }
         }
     }
 
     // Select chromosomes for crossover
-    private static Pair<Chromosome,Integer> tournamentSelection(Population pop) {
+    private static Pair<Particle,Integer> tournamentSelection(Population pop) {
         // Create a tournament population
-        Population tournament = new Population(Constants.tournamentSize, false);
+        Population tournament = new Population((int)(Constants.tournamentSize * Constants.POPULATION_SIZE), false);
         // For each place in the tournament get a random individual
         HashMap<Integer,Integer> pos = new HashMap<>();
-        for (int i = 0; i < Constants.tournamentSize; i++) {
+        for (int i = 0; i < (int)(Constants.tournamentSize * Constants.POPULATION_SIZE); i++) {
             int randomId = (int) (Math.random() * pop.size());
             tournament.saveIndividual(pop.getIndividual(randomId));
             pos.put(i,randomId);
         }
         // Get the fittest
-        Pair<Chromosome,Integer>fittest = tournament.getFittest();
-        return new Pair<Chromosome,Integer>(fittest.getKey(), pos.get(fittest.getValue()));
+        Pair<Particle,Integer>fittest = tournament.getFittest();
+        return new Pair<Particle,Integer>(fittest.getKey(), pos.get(fittest.getValue()));
     }
 
     public Population run( Population myPop) {

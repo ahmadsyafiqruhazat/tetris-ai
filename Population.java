@@ -6,7 +6,7 @@ import java.util.Comparator;
 
 public class Population {
 
-    ArrayList<Chromosome> chromosomes;
+    ArrayList<Particle> chromosomes;
 
     public Population(int populationSize, boolean initialise) {
         // Initialise population
@@ -14,30 +14,24 @@ public class Population {
         if (initialise) {
             // Loop and create chromosomes
             for (int i = 0; i < populationSize; i++) {
-                Chromosome newChromosome = new Chromosome();
+                Particle newChromosome = new Particle();
                 newChromosome.generateIndividual();
                 chromosomes.add(newChromosome);
             }
         }
     }
 
-    public void sort(){
-        Collections.sort(chromosomes, new Comparator<Chromosome>() {
-            @Override
-            public int compare(Chromosome o1, Chromosome o2) {
-                if (o1.getFitness()>o2.getFitness()) return 0;
-                else return 1;
-            }
-        });
+    public void setChromosomes(ArrayList<Particle> chromosomes) {
+        this.chromosomes = chromosomes;
     }
 
     /* Getters */
-    public Chromosome getIndividual(int index) {
+    public Particle getIndividual(int index) {
         return chromosomes.get(index);
     }
 
-    public Pair<Chromosome,Integer> getFittest() {
-        Chromosome fittest = chromosomes.get(0);
+    public Pair<Particle,Integer> getFittest() {
+        Particle fittest = chromosomes.get(0);
         int pos=0;
         // Loop through chromosomes to find fittest
         for (int i = 0; i < size(); i++) {
@@ -56,15 +50,15 @@ public class Population {
     }
 
     // Save individual
-    public void saveIndividual(Chromosome indiv) {
+    public void saveIndividual(Particle indiv) {
         chromosomes.add(indiv);
     }
 
-    public void saveIndividual(Chromosome indiv,int index) {
+    public void saveIndividual(Particle indiv,int index) {
         chromosomes.add(index,indiv);
     }
 
-    public ArrayList<Chromosome> getChromosomes() {
+    public ArrayList<Particle> getChromosomes() {
         return chromosomes;
     }
 }

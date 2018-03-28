@@ -139,20 +139,22 @@ public class Particle {
     }
     public Particle() {
         random = new Random();
-        initializePosition();
+        position = new double[DIMENSIONS];
+
+//        initializePosition();
         initializeVelocity();
         initializeFitness();
         initializePBest();
     }
 
-    public Particle(Chromosome chromosome) {
-        double[] initPos = chromosome.getGenes();
-        random = new Random();
-        initializePosition(initPos);
-        initializeVelocity();
-        initializeFitness(chromosome.getFitness());
-        initializePBest();
-    }
+//    public Particle(Chromosome chromosome) {
+//        double[] initPos = chromosome.getGenes();
+//        random = new Random();
+//        initializePosition(initPos);
+//        initializeVelocity();
+//        initializeFitness(chromosome.getFitness());
+//        initializePBest();
+//    }
 
     public void update() {
         updateFitness();
@@ -160,6 +162,44 @@ public class Particle {
         updateGBest();
         updateVelocity();
         updatePosition();
+    }
+
+    public void generateIndividual() {
+        for (int i = 0; i < size(); i++) {
+            double gene = random.nextDouble() * 1000.0f;
+            position[i] = gene;
+        }
+    }
+
+    public double getGene(int index) {
+        return position[index];
+    }
+
+    public double[] getGenes() {
+        return position;
+    }
+
+    public void setGene(int index, double value) {
+        position[index] = value;
+        fitness = 0;
+    }
+
+    public void mutateGene(int index, double value) {
+        position[index] += value;
+        fitness = 0;
+    }
+
+    @Override
+    public String toString() {
+        String geneString = "";
+        for (int i = 0; i < size(); i++) {
+            geneString += getGene(i);
+        }
+        return geneString;
+    }
+
+    public int size() {
+        return position.length;
     }
 
     public double[] getPosition() {

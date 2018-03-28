@@ -19,20 +19,27 @@ public class PlayerSkeleton {
   private static int[][][] pBottom;
   private static int[][][] pTop;
   private double[] weights;
-  
+
+  // prune rate is the % of nodes we disregard at every "max" layer as we move deeper to calculate
+  private static double PRUNE_RATE = 0.6;
+
 
   //implement this function to have a working system
   public int pickMove(State s, int[][] legalMoves) {
     int bestMove = 0;
-    float maxHeuristic = -19998;
+    double maxHeuristic = -19998;
     int nextPiece = s.getNextPiece();
     WorkingState ws = new WorkingState(s);
+
+    double[] weights = {1.0f, 1.0, 1.0, 2.0, 1.0, 1/3, 1.0, 1.0, 1/5, 1.0};
+    double[] nextWeights = {1.0, 1.0, 1.0, 2.0, 1.0, 1/3, 1.0, 1.0, 1/5, 1.0};
+
     Heuristics h = new Heuristics(weights);
 
     WorkingState nextWs;
 
     for (int i = 0; i < legalMoves.length; i++){
-      float heuristicMove = -19998;
+      double heuristicMove = -19998;
     
       nextWs = new WorkingState(nextPiece, legalMoves[i][ORIENT], legalMoves[i][SLOT], ws);
       if (!nextWs.lost) {
@@ -56,7 +63,7 @@ public class PlayerSkeleton {
       
       // it would be great if we could make a copy of state
       // int[][] newState = s.testMove(legalMoves[i][ORIENT], legalMoves[i][SLOT]);
-      // float heuristicMove = getHeuristic(newState);
+      // double heuristicMove = getHeuristic(newState);
         
       // System.out.println(i + ", " + heuristicMove);
     }
@@ -65,7 +72,8 @@ public class PlayerSkeleton {
     return bestMove;
   }
 
-  public float getNextHeuristic(WorkingState ws, double[] weights){
+  
+  public double getNextHeuristic(WorkingState ws, double[] weights){    
     int[][][] legalMoves = new int[N_PIECES][][];
     
     // generate legal moves
@@ -91,7 +99,7 @@ public class PlayerSkeleton {
     }                                         
     
     WorkingState nextWs;
-    float[] nextHeuristic = new float[N_PIECES];
+    double[] nextHeuristic = new double[N_PIECES];
     Heuristics nextH = new Heuristics(weights);
     
     for (int i = 0; i < N_PIECES; i++){
@@ -103,7 +111,7 @@ public class PlayerSkeleton {
       for (int i = 0; i < legalMoves[n].length; i++){
         nextWs = new WorkingState(n, legalMoves[n][i][ORIENT], legalMoves[n][i][SLOT], ws);
       
-        float heuristicNextMove = -9999;
+        double heuristicNextMove = -9999;
       
         if (!nextWs.lost) {
           heuristicNextMove = nextH.score(nextWs);
@@ -115,13 +123,13 @@ public class PlayerSkeleton {
       }  
     }
     
-    float total = 0;
-    for (float n: nextHeuristic) {
+    double total = 0;
+    for (double n: nextHeuristic) {
       total += n;  
       // System.out.println(total);
     } 
     
-    float result = total / (float)N_PIECES;
+    double result = total / (double)N_PIECES;
     // System.out.println(result);
     return result;  
   }
@@ -293,12 +301,13 @@ public class PlayerSkeleton {
       this.weights = w;
     }
 
-    public float score(State s) {
+    public double score(State s) {
       this.field = s.getField();
       this.top = s.getTop();
       this.rowsCleared = s.getRowsCleared();
-      float heuristic = 0;
 
+      double heuristic = 0;
+      
       int maxHeight = getMaxHeight();
       int totalHeight =  getTotalHeight();
       int bumpiness = getBumpiness();
@@ -310,16 +319,16 @@ public class PlayerSkeleton {
       int numHoleCols = holesArray[4];
       int concavity = getConcavity();
       
-      heuristic -= (float)(weights[0]*maxHeight);
-      heuristic -= (float)(weights[1]*totalHeight);
-      heuristic -= (float)(weights[2]*bumpiness);
-      heuristic -= (float)(weights[3]*numHoles);
-      heuristic -= (float)(weights[4]*maxHoleHeight);
-      heuristic -= (float)(weights[5]*holeDepth);
-      heuristic -= (float)(weights[6]*numHoleRows);
-      heuristic -= (float)(weights[7]*numHoleCols);
-      heuristic -= (float)(weights[8]*concavity);
-      heuristic += (float)(weights[9]*(float)rowsCleared);
+      heuristic -= (double)(weights[0]*maxHeight);
+      heuristic -= (double)(weights[1]*totalHeight);
+      heuristic -= (double)(weights[2]*bumpiness);
+      heuristic -= (double)(weights[3]*numHoles);
+      heuristic -= (double)(weights[4]*maxHoleHeight);
+      heuristic -= (double)(weights[5]*holeDepth);
+      heuristic -= (double)(weights[6]*numHoleRows);
+      heuristic -= (double)(weights[7]*numHoleCols);
+      heuristic -= (double)(weights[8]*concavity);
+      heuristic += (double)(weights[9]*(double)rowsCleared);
       
       return heuristic;  
     }
@@ -395,8 +404,10 @@ public class PlayerSkeleton {
 
     PlayerSkeleton p = new PlayerSkeleton();
     p.setWeights(weights);
-    while(!s.hasLost()) {
+    int moves = 0;
+    while(!s.hasLost() && moves <= Constants.MAX_MOVES) {
       s.makeMove(p.pickMove(s,s.legalMoves()));
+      moves++;
     }
     return s.getRowsCleared();
   }

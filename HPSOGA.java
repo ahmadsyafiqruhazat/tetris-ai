@@ -9,7 +9,7 @@ public class HPSOGA {
         ga = new GeneticAlgorithm();
         for(int i = 0 ; i< Constants.MAX_ITERATIONS; i++) {
             pso = new ParticleSwarmOptimization(myPop);
-            myPop = pso.run();
+            myPop.setChromosomes(pso.run());
             myPop = ga.run(myPop);
         }
     }

@@ -12,14 +12,14 @@ public class ParticleSwarmOptimization {
 
     private static final int NUM_ITERATIONS = 10;
 
-    private Particle[] particles;
+    private ArrayList<Particle> particles;
 
     public void printParticleData(int n) {
-        double[] position = particles[n].getPosition();
-        double[] velocity = particles[n].getVelocity();
-        int fitness = particles[n].getFitness();
-        double[] pBest = particles[n].getPBest();
-        int pBestFitness = particles[n].getPBestFitness();
+        double[] position = particles.get(n).getPosition();
+        double[] velocity = particles.get(n).getVelocity();
+        int fitness = particles.get(n).getFitness();
+        double[] pBest = particles.get(n).getPBest();
+        int pBestFitness = particles.get(n).getPBestFitness();
 
         for (int i = 0; i < position.length; i++) {
             System.out.print(position[i] + " ");
@@ -42,10 +42,10 @@ public class ParticleSwarmOptimization {
     }
 
     public void printSwarmData() {
-//        for (int i = 0; i < particles.length; i++) {
-//            printParticleData(i);
-//            System.out.println("---");
-//        }
+        for (int i = 0; i < particles.size(); i++) {
+            printParticleData(i);
+            System.out.println("---");
+        }
 
         for (int i = 0; i < Particle.gBest.length; i++) {
             System.out.print(Particle.gBest[i] + " ");
@@ -57,8 +57,8 @@ public class ParticleSwarmOptimization {
     }
 
     public void runOneIteration() {
-        for (int i = 0; i < particles.length; i++) {
-            particles[i].update();
+        for (int i = 0; i < particles.size(); i++) {
+            particles.get(i).update();
         }
     }
 
@@ -77,19 +77,12 @@ public class ParticleSwarmOptimization {
         Particle.SOCIAL_WEIGHT = SOCIAL_WEIGHT;
         Particle.gBest = gBest;
         Particle.gBestFitness = gBestFitness;
-        particles = new Particle[Constants.POPULATION_SIZE];
-        ArrayList<Chromosome> chromosomes = p.getChromosomes();
-        for (int i = 0; i < Constants.POPULATION_SIZE; i++)
-            particles[i] = new Particle(chromosomes.get(i));
+        particles = p.chromosomes;
     }
 
-    public Population run() {
+    public ArrayList<Particle> run() {
         runAndPrintIterations(Constants.PSO_ITERATIONS);
-        Population newPop = new Population(Constants.POPULATION_SIZE,false);
-        ArrayList<Chromosome> chromosomes = newPop.getChromosomes();
-        for (Particle par: particles) {
-            chromosomes.add(new Chromosome(par.getPosition(),par.getFitness()));
-        }
-        return newPop;
+
+        return particles;
     }
 }
