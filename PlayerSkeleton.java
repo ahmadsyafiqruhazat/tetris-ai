@@ -1,5 +1,6 @@
 import java.lang.*;
 import java.util.Arrays;
+import java.util.Collections;
 
 import java.util.stream.IntStream;
 
@@ -20,52 +21,46 @@ public class PlayerSkeleton {
   private static int[][][] pTop;
 
   // prune rate is the % of nodes we disregard at every "max" layer as we move deeper to calculate
-  private static int PRUNE_RATE = 0.6;
+  private static double PRUNE_RATE = 0.6;
   
 
   //implement this function to have a working system
   public int pickMove(State s, int[][] legalMoves) {
     int bestMove = 0;
-    double maxHeuristic = -19998;
+    double maxHeuristic = -9999;
     int nextPiece = s.getNextPiece();
     WorkingState ws = new WorkingState(s);
-    double[] weights = {1.0f, 1.0, 1.0, 2.0, 1.0, 1/3, 1.0, 1.0, 1/5, 1.0};
+    double[] weights = {1.0, 1.0, 1.0, 2.0, 1.0, 1/3, 1.0, 1.0, 1/5, 1.0};
     double[] nextWeights = {1.0, 1.0, 1.0, 2.0, 1.0, 1/3, 1.0, 1.0, 1/5, 1.0};
     Heuristics h = new Heuristics(weights);
 
-    WorkingState nextWs;
+    Possibility[] possibilities = new Possibility[legalMoves.length];
 
     for (int i = 0; i < legalMoves.length; i++){
-      double heuristicMove = -19998;
-    
-      nextWs = new WorkingState(nextPiece, legalMoves[i][ORIENT], legalMoves[i][SLOT], ws);
-      if (!nextWs.lost) {
-        heuristicMove = h.score(nextWs);
+      // nextWs = new WorkingState(nextPiece, legalMoves[i][ORIENT], legalMoves[i][SLOT], ws);
+      possibilities[i] = new Possibility(nextPiece, i, legalMoves);
+      possibilities[i].defineWS(ws);
+
+      if (!possibilities[i].state.lost) {
+        possibilities[i].setScore(h.score(possibilities[i].state));
       }
-
-      heuristicMove += getNextHeuristic(nextWs, nextWeights);
-
-      if (heuristicMove > maxHeuristic){
-        bestMove = i;
-        maxHeuristic = heuristicMove;  
-      }    
-      // int[][] field = new int[ROWS][COLS];
-      // int[] top = new int[COLS];
-      // copyField(field, s.getField());
-      // copyTop(top, s.getTop());
-      
-      // if (makeMove(field, top, turn, nextPiece, legalMoves[i][ORIENT], legalMoves[i][SLOT])) {
-      //   heuristicMove = getHeuristic(field, top);
-      // }
-      
-      // it would be great if we could make a copy of state
-      // int[][] newState = s.testMove(legalMoves[i][ORIENT], legalMoves[i][SLOT]);
-      // double heuristicMove = getHeuristic(newState);
-        
-      // System.out.println(i + ", " + heuristicMove);
     }
     
-    // System.out.println(bestMove);
+    Arrays.sort(possibilities, Collections.reverseOrder());
+
+    System.out.println("Unpruned: ");
+    for (int i=0; i<(int)((1-PRUNE_RATE)*(possibilities.length)); i++) {
+      System.out.println(possibilities[i].idx + " ");
+      possibilities[i].setScore(possibilities[i].score + getNextHeuristic(possibilities[i].state, nextWeights));
+      if (possibilities[i].score > maxHeuristic) {
+        System.out.println("Updating score for: " + i + " of score " + possibilities[i].score);
+        bestMove = possibilities[i].idx;
+        maxHeuristic = possibilities[i].score;
+      }
+    }
+  
+
+    System.out.println("bestMove: " + bestMove);
     return bestMove;
   }
   
@@ -108,13 +103,14 @@ public class PlayerSkeleton {
       for (int i = 0; i < legalMoves[n].length; i++){
         nextWs = new WorkingState(n, legalMoves[n][i][ORIENT], legalMoves[n][i][SLOT], ws);
 
+        // default score for if next move causes lost
         double heuristicNextMove = -9999;
 
         if (!nextWs.lost) {
           heuristicNextMove = nextH.score(nextWs);
         }
 
-        if (heuristicNextMove > nextHeuristic[n]){
+        if (heuristicNextMove > nextHeuristic[n]) {
           nextHeuristic[n] = heuristicNextMove;  
         }
       }  
@@ -122,7 +118,8 @@ public class PlayerSkeleton {
 
     double total = 0;
     for (double n: nextHeuristic) {
-      total += n;  
+      // System.out.println("nextHeuristic: " + n);
+      total += n;
       // System.out.println(total);
     } 
     
@@ -302,7 +299,10 @@ public class PlayerSkeleton {
       this.field = s.getField();
       this.top = s.getTop();
       this.rowsCleared = s.getRowsCleared();
-      double heuristic = 0;
+
+      // score: the higher the better, but
+      // it can be both positive and negative
+      double heuristic = 0; 
       
       int maxHeight = getMaxHeight();
       int totalHeight =  getTotalHeight();
@@ -387,18 +387,33 @@ public class PlayerSkeleton {
   }
 
   class Possibility implements Comparable<Possibility> {
-    public int orient, slot;
+    public int idx, piece;
+    public int[][] legalMoves;
     public double score;
+    public WorkingState state;
 
-    public Possibility(int orient, int slot) {
-      this.orient = orient;
-      this.slot = slot;
+    public Possibility(int piece, int idx, int[][] legalMoves) {
+      this.piece = piece;
+      this.idx = idx;
+      this.legalMoves = legalMoves;
+      score = Double.MIN_VALUE;
     }
 
-    public Possibility(int orient, int slot, double score) {
-      this.orient = orient;
-      this.slot = slot;
-      this.score = score;
+    // public Possibility(int orient, int slot, WorkingState ws) {
+    //   this.orient = orient;
+    //   this.slot = slot;
+    //   state = ws;
+    // }
+
+    // public Possibility(int orient, int slot, WorkingState ws, double score) {
+    //   this.orient = orient;
+    //   this.slot = slot;
+    //   this.score = score;
+    //   state = ws;
+    // }
+
+    public void defineWS(WorkingState original) {
+      state = new WorkingState(piece, legalMoves[idx][ORIENT], legalMoves[idx][SLOT], original);
     }
 
     public void setScore(double score) {
@@ -407,6 +422,7 @@ public class PlayerSkeleton {
 
     @Override
     public int compareTo(Possibility pos) {
+      // System.out.println("Comparing " + this.score + " to " + pos.score);
       return (int)(this.score - pos.score);
     }
   }
