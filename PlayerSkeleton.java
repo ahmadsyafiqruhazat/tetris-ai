@@ -43,24 +43,25 @@ public class PlayerSkeleton {
 
       if (!possibilities[i].state.lost) {
         possibilities[i].setScore(h.score(possibilities[i].state));
+      } else {
+        // System.out.println("State lost: " + possibilities[i].idx);
       }
     }
     
     Arrays.sort(possibilities, Collections.reverseOrder());
 
-    System.out.println("Unpruned: ");
+    // System.out.println("Unpruned: ");
     for (int i=0; i<(int)((1-PRUNE_RATE)*(possibilities.length)); i++) {
-      System.out.println(possibilities[i].idx + " ");
+      // System.out.println(possibilities[i].idx + " ");
       possibilities[i].setScore(possibilities[i].score + getNextHeuristic(possibilities[i].state, nextWeights));
       if (possibilities[i].score > maxHeuristic) {
-        System.out.println("Updating score for: " + i + " of score " + possibilities[i].score);
+        // System.out.println("Updating score for: " + possibilities[i].idx + " of score " + possibilities[i].score);
         bestMove = possibilities[i].idx;
         maxHeuristic = possibilities[i].score;
       }
     }
-  
 
-    System.out.println("bestMove: " + bestMove);
+    // System.out.println("bestMove: " + bestMove);
     return bestMove;
   }
   
@@ -396,7 +397,7 @@ public class PlayerSkeleton {
       this.piece = piece;
       this.idx = idx;
       this.legalMoves = legalMoves;
-      score = Double.MIN_VALUE;
+      score = -9999;
     }
 
     // public Possibility(int orient, int slot, WorkingState ws) {
