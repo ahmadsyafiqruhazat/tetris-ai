@@ -21,48 +21,88 @@ public class PlayerSkeleton {
   private static int[][][] pTop;
 
   // prune rate is the % of nodes we disregard at every "max" layer as we move deeper to calculate
-  private static double PRUNE_RATE = 0.6;
+  private static double PRUNE_RATE_INITIAL = 0.7;
+  private static double PRUNE_RATE_FINAL = 0.8;
+  private static int[][][] legalMoves = new int[N_PIECES][][];
+  private static double[] weights = {1.0, 1.0, 1.0, 2.0, 1.0, 1/3, 1.0, 1.0, 1/5, 1.0};
+  private static double[] nextWeights = {1.0, 1.0, 1.0, 2.0, 1.0, 1/3, 1.0, 1.0, 1/5, 1.0};
   
-
   //implement this function to have a working system
   public int pickMove(State s, int[][] legalMoves) {
     int bestMove = 0;
     double maxHeuristic = -9999;
     int nextPiece = s.getNextPiece();
     WorkingState ws = new WorkingState(s);
-    double[] weights = {1.0, 1.0, 1.0, 2.0, 1.0, 1/3, 1.0, 1.0, 1/5, 1.0};
-    double[] nextWeights = {1.0, 1.0, 1.0, 2.0, 1.0, 1/3, 1.0, 1.0, 1/5, 1.0};
     Heuristics h = new Heuristics(weights);
 
     Possibility[] possibilities = new Possibility[legalMoves.length];
 
-    for (int i = 0; i < legalMoves.length; i++){
+    for (int i = 0; i < legalMoves.length; i++) {
       // nextWs = new WorkingState(nextPiece, legalMoves[i][ORIENT], legalMoves[i][SLOT], ws);
       possibilities[i] = new Possibility(nextPiece, i, legalMoves);
       possibilities[i].defineWS(ws);
 
       if (!possibilities[i].state.lost) {
         possibilities[i].setScore(h.score(possibilities[i].state));
-      } else {
-        // System.out.println("State lost: " + possibilities[i].idx);
       }
     }
     
     Arrays.sort(possibilities, Collections.reverseOrder());
 
     // System.out.println("Unpruned: ");
-    for (int i=0; i<(int)((1-PRUNE_RATE)*(possibilities.length)); i++) {
-      // System.out.println(possibilities[i].idx + " ");
-      possibilities[i].setScore(possibilities[i].score + getNextHeuristic(possibilities[i].state, nextWeights));
+    for (int i=0; i<(int)((1-PRUNE_RATE_INITIAL)*(possibilities.length)); i++) {
+      // we only want the score of the leaf, it does not matter what the middle nodes scores are right?
+      possibilities[i].setScore(ldfsGetNextHeuristic(possibilities[i].state, nextWeights, 1));
       if (possibilities[i].score > maxHeuristic) {
-        // System.out.println("Updating score for: " + possibilities[i].idx + " of score " + possibilities[i].score);
         bestMove = possibilities[i].idx;
         maxHeuristic = possibilities[i].score;
       }
     }
 
-    // System.out.println("bestMove: " + bestMove);
     return bestMove;
+  }
+
+  public double ldfsGetNextHeuristic(WorkingState ws, double[] weights, int depthLimit) {
+    double[] nextHeuristic = new double[N_PIECES];
+    Possibility[] possibilities;
+    Heuristics h = new Heuristics(nextWeights);
+    double maxHeuristic;
+
+    for (int i = 0; i < N_PIECES; i++) {
+      nextHeuristic[i] = -9999;
+    }
+
+    // actual loop
+    // o(n*)
+    for (int n = 0; n < N_PIECES; n++) {
+      // new array of possibilities for piece n
+      possibilities = new Possibility[legalMoves[n].length];
+      maxHeuristic = -9999;
+      for (int i = 0; i < legalMoves[n].length; i++) {
+        possibilities[i] = new Possibility(n, i, legalMoves[n]);
+        possibilities[i].defineWS(ws);
+
+        if (!possibilities[i].state.lost) {
+          possibilities[i].setScore(h.score(possibilities[i].state));
+        }
+      }  
+
+      Arrays.sort(possibilities, Collections.reverseOrder());
+
+      if (depthLimit == 0) {
+        nextHeuristic[n] = possibilities[0].score;
+      } else {
+        for (int i=0; i<(int)((1-PRUNE_RATE_FINAL)*(possibilities.length)); i++) {
+          possibilities[i].setScore(ldfsGetNextHeuristic(possibilities[i].state, nextWeights, depthLimit-1));
+          if (possibilities[i].score > maxHeuristic) {
+            maxHeuristic = possibilities[i].score;
+          }
+        }
+        nextHeuristic[n] = maxHeuristic;
+      }
+    }
+    
+    return Arrays.stream(nextHeuristic).average().orElse(-9999);
   }
   
   public double getNextHeuristic(WorkingState ws, double[] weights){    
@@ -136,6 +176,28 @@ public class PlayerSkeleton {
     pBottom = State.getpBottom();
     pHeight = State.getpHeight();
     pTop = State.getpTop();
+
+    // generate legal moves - done globally for use in ldfs
+    for(int i = 0; i < N_PIECES; i++) {
+      //figure number of legal moves
+      int n = 0;
+      for(int j = 0; j < pOrients[i]; j++) {
+        //number of locations in this orientation
+        n += COLS+1-pWidth[i][j];
+      }
+      //allocate space
+      legalMoves[i] = new int[n][2];
+      //for each orientation
+      n = 0;
+      for(int j = 0; j < pOrients[i]; j++) {
+        //for each slot
+        for(int k = 0; k < COLS+1-pWidth[i][j];k++) {
+          legalMoves[i][n][ORIENT] = j;
+          legalMoves[i][n][SLOT] = k;
+          n++;
+        }
+      }
+    }
     
     new TFrame(s);
     PlayerSkeleton p = new PlayerSkeleton();
@@ -399,19 +461,6 @@ public class PlayerSkeleton {
       this.legalMoves = legalMoves;
       score = -9999;
     }
-
-    // public Possibility(int orient, int slot, WorkingState ws) {
-    //   this.orient = orient;
-    //   this.slot = slot;
-    //   state = ws;
-    // }
-
-    // public Possibility(int orient, int slot, WorkingState ws, double score) {
-    //   this.orient = orient;
-    //   this.slot = slot;
-    //   this.score = score;
-    //   state = ws;
-    // }
 
     public void defineWS(WorkingState original) {
       state = new WorkingState(piece, legalMoves[idx][ORIENT], legalMoves[idx][SLOT], original);
