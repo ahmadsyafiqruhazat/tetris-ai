@@ -39,57 +39,51 @@ public class PlayerSkeleton {
     // prune rate is the % of nodes we disregard at every "max" layer as we move deeper to calculate
     private static double PRUNE_RATE = 0.6;
 
-//    //implement this function to have a working system
-//    public int pickMove(State s, int[][] legalMoves) {
-//        int bestMove = 0;
-//        double maxHeuristic = -19998;
-//        int nextPiece = s.getNextPiece();
-//        WorkingState ws = new WorkingState(s);
-//        double[] weights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
-//        double[] nextWeights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
-//        Heuristics h = new Heuristics(weights);
-//
-//        WorkingState nextWs;
-//
-//        for (int i = 0; i < legalMoves.length; i++){
-//            double heuristicMove = -19998;
-//
-//            nextWs = new WorkingState(nextPiece, legalMoves[i][ORIENT], legalMoves[i][SLOT], ws);
-//
-//
-//            long startTime = System.nanoTime();
-//
-//            if (!nextWs.lost) {
-//                heuristicMove = h.score(nextWs);
-//            }
-//
-//            long midTime = System.nanoTime();
-////            System.out.println("Evaluate: " + (midTime - startTime));
-//
-////      System.out.println("evaluating move: Piece - " + nextPiece + " Position - " + legalMoves[i][SLOT] + " " +
-////              "Orientation - " + legalMoves[i][ORIENT] );
-//
-//            heuristicMove += getNextHeuristic(nextWs, nextWeights);
-//            long endTime = System.nanoTime();
-//
-//            System.out.println("Next move: " + (endTime - midTime));
-//
-//            if (heuristicMove > maxHeuristic){
-//                bestMove = i;
-//                maxHeuristic = heuristicMove;
-//            }
-//        }
-//
-////    System.out.println("new maxScore: " + maxHeuristic + " move: " + bestMove);
-//        // System.out.println(bestMove);
-//        return bestMove;
-//    }
-
     //implement this function to have a working system
     public int pickMove(State s, int[][] legalMoves) {
+        int bestMove = 0;
+        double maxHeuristic = -19998;
         int nextPiece = s.getNextPiece();
-        WorkingState currentState = new WorkingState(s);
-        return pickMove(currentState, nextPiece, legalMoves);
+        WorkingState ws = new WorkingState(s);
+        double[] weights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
+        double[] nextWeights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
+        Heuristics h = new Heuristics(weights);
+
+        WorkingState nextWs;
+
+        for (int i = 0; i < legalMoves.length; i++) {
+            double heuristicMove = -19998;
+
+            nextWs = new WorkingState(nextPiece, legalMoves[i][ORIENT], legalMoves[i][SLOT], ws);
+
+
+            long startTime = System.nanoTime();
+
+            if (!nextWs.lost) {
+                heuristicMove = h.score(nextWs);
+//                System.out.println("new score: " + heuristicMove);
+            }
+
+            long midTime = System.nanoTime();
+//            System.out.println("Evaluate: " + (midTime - startTime));
+
+//      System.out.println("evaluating move: Piece - " + nextPiece + " Position - " + legalMoves[i][SLOT] + " " +
+//              "Orientation - " + legalMoves[i][ORIENT] );
+
+            heuristicMove += getNextHeuristic(nextWs, nextWeights);
+            long endTime = System.nanoTime();
+
+//            System.out.println("Next move: " + (endTime - midTime));
+
+            if (heuristicMove > maxHeuristic) {
+                bestMove = i;
+                maxHeuristic = heuristicMove;
+            }
+        }
+
+//    System.out.println("new maxScore: " + maxHeuristic + " move: " + bestMove);
+        // System.out.println(bestMove);
+        return bestMove;
     }
 
     public static void main(String[] args){
@@ -119,17 +113,6 @@ public class PlayerSkeleton {
     }
 
 
-    public int pickMove(WorkingState state, int nextPiece, int[][] legalMoves) {
-        possibleMoves.clear();
-        for (int i = 0; i < legalMoves.length; i++) {
-            int orientation = legalMoves[i][ORIENT];
-            int position = legalMoves[i][SLOT];
-            possibleMoves.add(new Move(state, i, nextPiece, orientation, position));
-        }
-//      System.out.println("Num of possible moves: " + possibleMoves.size());
-        return concurrentExecutor.execute(EVAL_MOVE_FUNC, PICK_MOVE_FUNC, possibleMoves);
-    }
-
     public PlayerSkeleton(ForkJoinPool forkJoinPool) {
         this.forkJoinExecutor = forkJoinPool;
         this.concurrentExecutor = new ConcurrentExecutor(forkJoinPool);
@@ -144,114 +127,6 @@ public class PlayerSkeleton {
         this.concurrentExecutor = new ConcurrentExecutor(forkJoinPool);
         this.evaluator = new WeightedSumEvaluator(EVALUATORS, weights, nextWeights);
     }
-
-    public static final MoveEvaluator[] EVALUATORS;
-    static {
-        ArrayList<MoveEvaluator> evaluators = new ArrayList<MoveEvaluator>();
-        evaluators.add(new MaxHeight());
-        evaluators.add(new TotalHeight());
-        evaluators.add(new Bumpiness());
-        evaluators.add(new NumHoles());
-        evaluators.add(new MaxHoleHeight());
-        evaluators.add(new HoleDepth());
-        evaluators.add(new NumHoleRows());
-        evaluators.add(new NumHoleCols());
-        evaluators.add(new Concavity());
-        evaluators.add(new RowsCleared());
-
-        EVALUATORS = evaluators.toArray(new MoveEvaluator[evaluators.size()]);
-    }
-
-    private final Evaluator<Move, EvaluationResult> EVAL_MOVE_FUNC = new Evaluator<Move, EvaluationResult>() {
-        @Override
-        public EvaluationResult evaluate(Move move) {
-            WorkingState state = move.getState();
-//            long startTime = System.nanoTime();
-            MoveResult moveResult = state.makeSpecificMove(move.getPiece(),
-                    move.getOrientation(), move.getPosition());
-//            long midTime = System.nanoTime();
-//            System.out.println("Make specific move: " + (midTime - startTime));
-          float nextScore = getNextHeuristic(moveResult.getState(), nextWeights);
-          float score = evaluator.evaluate(moveResult) + nextScore;
-//            long intTime = System.nanoTime();
-//
-////            System.out.println("Evaluate: " + (intTime - midTime));
-//            int[][] legalMoves = state.legalMoves();
-//            int nextPiece = state.getNextPiece();
-//            for (int moveIndex = 0; moveIndex < legalMoves.length; ++moveIndex) {
-//                int orientation = legalMoves[moveIndex][ORIENT];
-//                int position = legalMoves[moveIndex][SLOT];
-//                possibleMoves.add(new Move(state, moveIndex, nextPiece,
-//                        orientation, position));
-//            }
-//            long intTime2 = System.nanoTime();
-//
-////            System.out.println("Find possible moves: " + (intTime2 - intTime));
-////          ConcurrentExecutor newExecutor = new ConcurrentExecutor(ForkJoinPool.commonPool());
-//            score += concurrentExecutor.execute(EVAL_FURTHER_MOVE_FUNC, PROBE_MOVE_FUNC, possibleMoves);
-//            long endTime = System.nanoTime();
-
-//            System.out.println("Next move: " + (endTime - intTime2));
-//          System.out.println("evaluating move: Piece - " + move.getPiece() + " Position - " + move.getPosition() + " " +
-//                  "Orientation " +
-//                  "- " + move.getOrientation() );
-            return new EvaluationResult(move.getIndex(), score);
-        }
-    };
-
-
-    private final Evaluator<Move, EvaluationResult> EVAL_FURTHER_MOVE_FUNC = new Evaluator<Move, EvaluationResult>() {
-        @Override
-        public EvaluationResult evaluate(Move move) {
-            WorkingState state = move.getState();
-            MoveResult moveResult = state.makeSpecificMove(move.getPiece(),
-                    move.getOrientation(), move.getPosition());
-            float score = evaluator.evaluate(moveResult);
-            return new EvaluationResult(move.getIndex(), score);
-        }
-    };
-
-
-    private static final Executor<EvaluationResult, Integer> PICK_MOVE_FUNC = new Executor<EvaluationResult,
-            Integer>() {
-        @Override
-        public Integer execute(Iterable<EvaluationResult> results) {
-            float maxScore = -Float.MAX_VALUE;
-            int move = -1;
-
-            for (EvaluationResult result : results) {
-                float score = result.getScore();
-//              System.out.println("new score: " + score + " maxScore: " + maxScore);
-                if (score > maxScore) {
-                    maxScore = score;
-                    move = result.getMove();
-                }
-            }
-//          System.out.println("new maxScore: " + maxScore + " move: " + move);
-
-            return move;
-        }
-
-    };
-
-
-    private static final Executor<EvaluationResult, Float> PROBE_MOVE_FUNC = new Executor<EvaluationResult,
-            Float>() {
-        @Override
-        public Float execute(Iterable<EvaluationResult> results) {
-            float maxScore = -Float.MAX_VALUE;
-
-            for (EvaluationResult result : results) {
-                float score = result.getScore();
-                if (score > maxScore) {
-                    maxScore = score;
-                }
-            }
-
-            return maxScore;
-        }
-    };
-
 
     public float getNextHeuristic(WorkingState ws, double[] weights){
         int[][][] legalMoves = new int[N_PIECES][][];
@@ -309,7 +184,7 @@ public class PlayerSkeleton {
             // System.out.println(total);
         }
 
-        double result = total / (double)N_PIECES;
+        double result = total / (double) N_PIECES;
         // System.out.println(result);
         return (float) result;
     }
@@ -378,10 +253,12 @@ public class PlayerSkeleton {
         }
 
         public MoveResult makeSpecificMove(int nextPiece, int orient, int slot) {
+//            // For concurrent implementation
+//            int[][] field = cloneField(this.field);
+//            int[] top = cloneTop(this.top);
+//            int turn = this.turn + 1;
 
-            int[][] field = cloneField(this.field);
-            int[] top = cloneTop(this.top);
-            int turn = this.turn + 1;
+            turn++;
 
             //height if the first column makes contact
             // System.out.println(nextPiece + " " + orient + " " + slot);
@@ -468,11 +345,286 @@ public class PlayerSkeleton {
     }
 
 
+
+    /**
+     * A class to get all the required heuristics
+     */
+
+    private class Heuristics {
+        public int[][] field;
+        public int[] top;
+        public double[] weights;
+        public int rowsCleared;
+
+        public Heuristics(double[] w) {
+            this.weights = w;
+        }
+
+        public double score(State s) {
+            this.field = s.getField();
+            this.top = s.getTop();
+            this.rowsCleared = s.getRowsCleared();
+            double heuristic = 0;
+
+            int maxHeight = getMaxHeight();
+            int totalHeight =  getTotalHeight();
+            int bumpiness = getBumpiness();
+            int[] holesArray = getHoles();
+            int numHoles = holesArray[0];
+            int maxHoleHeight = holesArray[1];
+            int holeDepth = holesArray[2];
+            int numHoleRows = holesArray[3];
+            int numHoleCols = holesArray[4];
+            int concavity = getConcavity();
+
+            heuristic -= (double)(weights[0]*maxHeight);
+            heuristic -= (double)(weights[1]*totalHeight);
+            heuristic -= (double)(weights[2]*bumpiness);
+
+//            System.out.println("height-related score: " + heuristic);
+
+            heuristic -= (double)(weights[3]*numHoles);
+            heuristic -= (double)(weights[4]*maxHoleHeight);
+            heuristic -= (double)(weights[5]*holeDepth);
+            heuristic -= (double)(weights[6]*numHoleRows);
+            heuristic -= (double)(weights[7]*numHoleCols);
+
+            heuristic -= (double)(weights[8]*concavity);
+            heuristic += (double)(weights[9]*(double)rowsCleared);
+
+//            System.out.println("final score: " + heuristic);
+
+            return heuristic;
+        }
+
+        public int getMaxHeight() {
+            return Arrays.stream(top).max().getAsInt();
+        }
+
+        public int getTotalHeight() {
+            return Arrays.stream(top).sum();
+        }
+
+        public int getConcavity(){
+            int concavity = 0;
+            for (int j = 0; j < 4; j++){
+                concavity += top[4] - top[j];
+            }
+            for (int j = 6; j < COLS; j++){
+                concavity += top[5] - top[j];
+            }
+            return concavity;
+        }
+
+        public int[] getHoles(){
+            int holes = 0;
+            int maxHoleHeight = 0;
+            int[] rowHoles = new int[ROWS];
+            int[] colHoles = new int[COLS];
+            int holeMultiplier = 1; // holes on top of holes are really bad
+            int holeDepth = 1; // total number of blocks above holes
+
+            for (int j = 0; j < field[0].length; j++){
+                holeMultiplier = 1;
+                for (int i = top[j]-2; i >= 0; i--){
+                    if (field[i][j] == 0){
+                        holes += holeMultiplier;
+                        holeMultiplier++;
+                        if (top[j]>maxHoleHeight){
+                            maxHoleHeight = top[j];
+                        }
+                        rowHoles[i] = 1;
+                        colHoles[j] = 1;
+                        continue;
+                    }
+                    holeDepth++;
+                }
+            }
+            // System.out.println(holes);
+            int[] result = {holes, maxHoleHeight, holeDepth, IntStream.of(rowHoles).sum(), IntStream.of(colHoles).sum()};
+            return result;
+        }
+
+        public int getBumpiness() {
+            int total = 0;
+            for (int i = 0; i < top.length - 1; i++) {
+                total += Math.abs(top[i] - top[i + 1]);
+            }
+            return total;
+        }
+    }
+
+    private void setWeights(double[] weights){
+        this.weights = weights;
+    }
+
+    public static int run(double[] weights) {
+        State s = new State();
+        pOrients = s.getpOrients();
+        pWidth = s.getpWidth();
+        pBottom = s.getpBottom();
+        pHeight = s.getpHeight();
+        pTop = s.getpTop();
+
+        ForkJoinPool concurrentExecutor = new ForkJoinPool();
+        PlayerSkeleton p = new PlayerSkeleton(concurrentExecutor);
+        p.setWeights(weights);
+        int moves = 0;
+        while(!s.hasLost() && moves <= Constants.MAX_MOVES) {
+            s.makeMove(p.pickMove(s,s.legalMoves()));
+            moves++;
+        }
+        return s.getRowsCleared();
+    }
+
+
     /**
      *
      *
-     * Evaluators for different heuristics
      *
+     * Concurrency Part
+     *
+     *
+     *
+     */
+
+
+//    //implement this function to have a working system
+//    public int pickMove(State s, int[][] legalMoves) {
+//        int nextPiece = s.getNextPiece();
+//        WorkingState currentState = new WorkingState(s);
+//        return pickMove(currentState, nextPiece, legalMoves);
+//    }
+
+
+    public int pickMove(WorkingState state, int nextPiece, int[][] legalMoves) {
+        possibleMoves.clear();
+        for (int i = 0; i < legalMoves.length; i++) {
+            int orientation = legalMoves[i][ORIENT];
+            int position = legalMoves[i][SLOT];
+            possibleMoves.add(new Move(state, i, nextPiece, orientation, position));
+        }
+//      System.out.println("Num of possible moves: " + possibleMoves.size());
+        return concurrentExecutor.execute(EVAL_MOVE_FUNC, PICK_MOVE_FUNC, possibleMoves);
+    }
+
+
+    /**
+     * Evaluation functions
+     */
+
+
+    public static final MoveEvaluator[] EVALUATORS;
+    static {
+        ArrayList<MoveEvaluator> evaluators = new ArrayList<MoveEvaluator>();
+        evaluators.add(new MaxHeight());
+        evaluators.add(new TotalHeight());
+        evaluators.add(new Bumpiness());
+        evaluators.add(new NumHoles());
+        evaluators.add(new MaxHoleHeight());
+        evaluators.add(new HoleDepth());
+        evaluators.add(new NumHoleRows());
+        evaluators.add(new NumHoleCols());
+        evaluators.add(new Concavity());
+        evaluators.add(new RowsCleared());
+
+        EVALUATORS = evaluators.toArray(new MoveEvaluator[evaluators.size()]);
+    }
+
+    private final Evaluator<Move, EvaluationResult> EVAL_MOVE_FUNC = new Evaluator<Move, EvaluationResult>() {
+        @Override
+        public EvaluationResult evaluate(Move move) {
+            WorkingState state = move.getState();
+//            long startTime = System.nanoTime();
+            MoveResult moveResult = state.makeSpecificMove(move.getPiece(),
+                    move.getOrientation(), move.getPosition());
+//            long midTime = System.nanoTime();
+//            System.out.println("Make specific move: " + (midTime - startTime));
+//          float nextScore = getNextHeuristic(moveResult.getState(), nextWeights);
+            float score = evaluator.evaluate(moveResult);
+            long intTime = System.nanoTime();
+
+//            System.out.println("Evaluate: " + (intTime - midTime));
+            int[][] legalMoves = state.legalMoves();
+            int nextPiece = state.getNextPiece();
+            for (int moveIndex = 0; moveIndex < legalMoves.length; ++moveIndex) {
+                int orientation = legalMoves[moveIndex][ORIENT];
+                int position = legalMoves[moveIndex][SLOT];
+                possibleMoves.add(new Move(state, moveIndex, nextPiece,
+                        orientation, position));
+            }
+            long intTime2 = System.nanoTime();
+
+//            System.out.println("Find possible moves: " + (intTime2 - intTime));
+//          ConcurrentExecutor newExecutor = new ConcurrentExecutor(ForkJoinPool.commonPool());
+            score += concurrentExecutor.execute(EVAL_FURTHER_MOVE_FUNC, PROBE_MOVE_FUNC, possibleMoves);
+            long endTime = System.nanoTime();
+
+//            System.out.println("Next move: " + (endTime - intTime2));
+//          System.out.println("evaluating move: Piece - " + move.getPiece() + " Position - " + move.getPosition() + " " +
+//                  "Orientation " +
+//                  "- " + move.getOrientation() );
+            return new EvaluationResult(move.getIndex(), score);
+        }
+    };
+
+
+    private final Evaluator<Move, EvaluationResult> EVAL_FURTHER_MOVE_FUNC = new Evaluator<Move, EvaluationResult>() {
+        @Override
+        public EvaluationResult evaluate(Move move) {
+            WorkingState state = move.getState();
+            MoveResult moveResult = state.makeSpecificMove(move.getPiece(),
+                    move.getOrientation(), move.getPosition());
+            float score = evaluator.evaluate(moveResult);
+            return new EvaluationResult(move.getIndex(), score);
+        }
+    };
+
+
+    private static final Executor<EvaluationResult, Integer> PICK_MOVE_FUNC = new Executor<EvaluationResult,
+            Integer>() {
+        @Override
+        public Integer execute(Iterable<EvaluationResult> results) {
+            float maxScore = -Float.MAX_VALUE;
+            int move = -1;
+
+            for (EvaluationResult result : results) {
+                float score = result.getScore();
+//              System.out.println("new score: " + score + " maxScore: " + maxScore);
+                if (score > maxScore) {
+                    maxScore = score;
+                    move = result.getMove();
+                }
+            }
+//          System.out.println("new maxScore: " + maxScore + " move: " + move);
+
+            return move;
+        }
+
+    };
+
+
+    private static final Executor<EvaluationResult, Float> PROBE_MOVE_FUNC = new Executor<EvaluationResult,
+            Float>() {
+        @Override
+        public Float execute(Iterable<EvaluationResult> results) {
+            float maxScore = -Float.MAX_VALUE;
+
+            for (EvaluationResult result : results) {
+                float score = result.getScore();
+                if (score > maxScore) {
+                    maxScore = score;
+                }
+            }
+
+            return maxScore;
+        }
+    };
+
+
+
+    /**
+     * Evaluators for different heuristics
      */
 
 
@@ -568,132 +720,10 @@ public class PlayerSkeleton {
         }
     }
 
-
     /**
-     * A class to get all the required heuristics
+     * Functional Interfaces for concurrency
      */
 
-    private class Heuristics {
-        public int[][] field;
-        public int[] top;
-        public double[] weights;
-        public int rowsCleared;
-
-        public Heuristics(double[] w) {
-            this.weights = w;
-        }
-
-        public double score(State s) {
-            this.field = s.getField();
-            this.top = s.getTop();
-            this.rowsCleared = s.getRowsCleared();
-
-            double heuristic = 0;
-
-            int maxHeight = getMaxHeight();
-            int totalHeight =  getTotalHeight();
-            int bumpiness = getBumpiness();
-            int[] holesArray = getHoles();
-            int numHoles = holesArray[0];
-            int maxHoleHeight = holesArray[1];
-            int holeDepth = holesArray[2];
-            int numHoleRows = holesArray[3];
-            int numHoleCols = holesArray[4];
-            int concavity = getConcavity();
-
-            heuristic -= (double)(weights[0]*maxHeight);
-            heuristic -= (double)(weights[1]*totalHeight);
-            heuristic -= (double)(weights[2]*bumpiness);
-            heuristic -= (double)(weights[3]*numHoles);
-            heuristic -= (double)(weights[4]*maxHoleHeight);
-            heuristic -= (double)(weights[5]*holeDepth);
-            heuristic -= (double)(weights[6]*numHoleRows);
-            heuristic -= (double)(weights[7]*numHoleCols);
-            heuristic -= (double)(weights[8]*concavity);
-            heuristic += (double)(weights[9]*(double)rowsCleared);
-
-            return heuristic;
-        }
-
-        public int getMaxHeight() {
-            return Arrays.stream(top).max().getAsInt();
-        }
-
-        public int getTotalHeight() {
-            return Arrays.stream(top).sum();
-        }
-
-        public int getConcavity(){
-            int concavity = 0;
-            for (int j = 0; j < 4; j++){
-                concavity += top[4] - top[j];
-            }
-            for (int j = 6; j < COLS; j++){
-                concavity += top[5] - top[j];
-            }
-            return concavity;
-        }
-
-        public int[] getHoles(){
-            int holes = 0;
-            int maxHoleHeight = 0;
-            int[] rowHoles = new int[ROWS];
-            int[] colHoles = new int[COLS];
-            int holeMultiplier = 1; // holes on top of holes are really bad
-            int holeDepth = 1; // total number of blocks above holes
-
-            for (int j = 0; j < field[0].length; j++){
-                holeMultiplier = 1;
-                for (int i = top[j]-2; i >= 0; i--){
-                    if (field[i][j] == 0){
-                        holes += holeMultiplier;
-                        holeMultiplier++;
-                        if (top[j]>maxHoleHeight){
-                            maxHoleHeight = top[j];
-                        }
-                        rowHoles[i] = 1;
-                        colHoles[j] = 1;
-                        continue;
-                    }
-                    holeDepth++;
-                }
-            }
-            // System.out.println(holes);
-            int[] result = {holes, maxHoleHeight, holeDepth, IntStream.of(rowHoles).sum(), IntStream.of(colHoles).sum()};
-            return result;
-        }
-
-        public int getBumpiness() {
-            int total = 0;
-            for (int i = 0; i < top.length - 1; i++) {
-                total += Math.abs(top[i] - top[i + 1]);
-            }
-            return total;
-        }
-    }
-
-    private void setWeights(double[] weights){
-        this.weights = weights;
-    }
-
-    public static int run(double[] weights) {
-        State s = new State();
-        pOrients = s.getpOrients();
-        pWidth = s.getpWidth();
-        pBottom = s.getpBottom();
-        pHeight = s.getpHeight();
-        pTop = s.getpTop();
-
-        ForkJoinPool concurrentExecutor = new ForkJoinPool();
-        PlayerSkeleton p = new PlayerSkeleton(concurrentExecutor);
-        p.setWeights(weights);
-        int moves = 0;
-        while(!s.hasLost() && moves <= Constants.MAX_MOVES) {
-            s.makeMove(p.pickMove(s,s.legalMoves()));
-            moves++;
-        }
-        return s.getRowsCleared();
-    }
 
     public static class ConcurrentExecutor {
 
