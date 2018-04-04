@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.ForkJoinPool;
 
@@ -23,6 +24,10 @@ public class Particle {
 
     private double[] pBest;
     private int pBestFitness;
+
+    private ArrayList<Double[]> allPositions = new ArrayList<>();
+    private PlayerSkeleton.ConcurrentExecutor concurrentExecutor = new PlayerSkeleton.ConcurrentExecutor(new
+            ForkJoinPool());
 
     private double getRandomInRange(double min, double max) {
         return min + (random.nextDouble() * (max - min));
@@ -64,19 +69,58 @@ public class Particle {
         }
     }
 
-    private int getOneFitness() {
-        PlayerSkeleton p = new PlayerSkeleton(new ForkJoinPool());
-        return  p.run(position);
-    }
+
+    private static final PlayerSkeleton.Evaluator<Double[], Float> FITNESS_FUNC = new PlayerSkeleton.Evaluator<Double[],
+            Float>() {
+        @Override
+        public Float evaluate(Double[] genes) {
+            System.out.println("Evaluating fitness");
+            double[] weights = new double[Constants.defaultGeneLength];
+            for (int i = 0; i < Constants.defaultGeneLength; i++) {
+                weights[i] = genes[i];
+            }
+            int fitness = PlayerSkeleton.run(weights);
+            return (float) fitness;
+        }
+    };
+
+    private static final PlayerSkeleton.Executor<Float, Float> AVG_SCORE = new PlayerSkeleton.Executor<Float,
+            Float>() {
+
+        @Override
+        public Float execute(Iterable<Float> inputs) {
+            System.out.println("Taking average");
+            int count = 0;
+            float sum = 0.0f;
+
+            for(float num: inputs) {
+                sum += num;
+                ++count;
+            }
+
+            return sum / (float) count;
+        }
+    };
+
+//    private int getOneFitness() {
+//        PlayerSkeleton p = new PlayerSkeleton(new ForkJoinPool());
+//        return  p.run(position);
+//    }
 
     // TODO: Parallelise
     // TODO: Something other than average?
     private void updateFitness() {
-        int sum = 0;
-        for (int i = 0; i < Constants.NUM_RUNS; i++) {
-            sum += getOneFitness();
+        float result = 0;
+        Double[] weights = new Double[Constants.defaultGeneLength];
+        for (int i = 0; i < Constants.defaultGeneLength; i++) {
+            weights[i] = position[i];
         }
-        fitness = sum / Constants.NUM_RUNS;
+        for (int i = 0; i < Constants.NUM_RUNS; i++) {
+            allPositions.add(weights);
+        }
+
+        result = concurrentExecutor.execute(FITNESS_FUNC, AVG_SCORE, allPositions);
+        fitness = (int) result;
     }
 
     private void updatePBest() {
