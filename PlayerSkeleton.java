@@ -84,7 +84,7 @@ public class PlayerSkeleton {
 //        // System.out.println(bestMove);
 //        return bestMove;
 //    }
-//
+////
     //implement this function to have a working system
     public int pickMove(State s, int[][] legalMoves) {
         int nextPiece = s.getNextPiece();

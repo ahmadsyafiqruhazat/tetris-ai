@@ -10,7 +10,7 @@ public class Constants {
     public static final int MAX_LOST_GENERATION = 20;
 
     // Number of runs averaged to get the fitness
-    static final int NUM_RUNS = 100;
+    static final int NUM_RUNS = 10;
     public static int MAX_ITERATIONS = 100;
     public static int PSO_ITERATIONS = 100;
     public static int MAX_MOVES = 500;
