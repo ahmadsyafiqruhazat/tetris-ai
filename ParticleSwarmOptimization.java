@@ -1,4 +1,8 @@
+import java.lang.reflect.Array;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ForkJoinPool;
 
 public class ParticleSwarmOptimization {
 
@@ -13,6 +17,8 @@ public class ParticleSwarmOptimization {
     private static final int NUM_ITERATIONS = 10;
 
     private ArrayList<Particle> particles;
+    private PlayerSkeleton.ConcurrentExecutor concurrentExecutor = new PlayerSkeleton.ConcurrentExecutor(new
+            ForkJoinPool());
 
     public void printParticleData(int n) {
         double[] position = particles.get(n).getPosition();
@@ -57,9 +63,10 @@ public class ParticleSwarmOptimization {
     }
 
     public void runOneIteration() {
-        for (int i = 0; i < particles.size(); i++) {
-            particles.get(i).update();
-        }
+//        for (int i = 0; i < particles.size(); i++) {
+//            particles.get(i).update();
+//        }
+        concurrentExecutor.evaluate(EVAL_PARTICLE, particles, new ArrayList<Particle>());
     }
 
     public void runAndPrintIterations(int num) {
@@ -85,4 +92,15 @@ public class ParticleSwarmOptimization {
 
         return particles;
     }
+
+    private static final PlayerSkeleton.Evaluator<Particle, Particle> EVAL_PARTICLE = new PlayerSkeleton
+            .Evaluator<Particle,
+            Particle>() {
+        @Override
+        public Particle evaluate(Particle particle) {
+            System.out.println("Evaluating particle " + particle.toString());
+            particle.update();
+            return particle;
+        }
+    };
 }
