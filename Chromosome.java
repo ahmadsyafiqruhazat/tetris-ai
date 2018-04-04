@@ -1,4 +1,6 @@
+import java.util.ArrayList;
 import java.util.Random;
+import java.util.concurrent.ForkJoinPool;
 
 public class Chromosome {
 
@@ -6,6 +8,9 @@ public class Chromosome {
     // Cache
     private int fitness = 0;
     private Random random = new Random();
+    private ArrayList<Double[]> allGenes = new ArrayList<>();
+    private PlayerSkeleton.ConcurrentExecutor concurrentExecutor = new PlayerSkeleton.ConcurrentExecutor(new
+            ForkJoinPool());
 
     public Chromosome(){}
 
@@ -38,6 +43,36 @@ public class Chromosome {
         fitness = 0;
     }
 
+    private static final PlayerSkeleton.Evaluator<Double[], Float> FITNESS_FUNC = new PlayerSkeleton.Evaluator<Double[],
+            Float>() {
+        @Override
+        public Float evaluate(Double[] genes) {
+            double[] weights = new double[Constants.defaultGeneLength];
+            for (int i = 0; i < Constants.defaultGeneLength; i++) {
+                weights[i] = genes[i];
+            }
+            int fitness = PlayerSkeleton.run(weights);
+            return (float) fitness;
+        }
+    };
+
+    private static final PlayerSkeleton.Executor<Float, Float> AVG_SCORE = new PlayerSkeleton.Executor<Float,
+            Float>() {
+
+        @Override
+        public Float execute(Iterable<Float> inputs) {
+            int count = 0;
+            float sum = 0.0f;
+
+            for(float num: inputs) {
+                sum += num;
+                ++count;
+            }
+
+            return sum / (float) count;
+        }
+    };
+
     /* Public methods */
     public int size() {
         return genes.length;
@@ -46,10 +81,16 @@ public class Chromosome {
     public int getFitness() {
         if (fitness == 0) {
             int totalFitness = 0;
-            for(int i =0 ; i<=Constants.NUM_RUNS; i++){
-                totalFitness += PlayerSkeleton.run(genes);
+            Double[] weights = new Double[Constants.defaultGeneLength];
+            for (int i = 0; i < Constants.defaultGeneLength; i++) {
+                weights[i] = genes[i];
             }
-            fitness = totalFitness/Constants.NUM_RUNS;
+
+            for(int i =0 ; i<=Constants.NUM_RUNS; i++){
+                allGenes.add(weights);
+            }
+            float result = concurrentExecutor.execute(FITNESS_FUNC, AVG_SCORE, allGenes);
+            fitness = (int) result;
         }
 
         return fitness;
