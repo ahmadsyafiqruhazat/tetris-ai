@@ -81,7 +81,7 @@ public class PlayerSkeleton {
 =======
     for (int i = 0; i < legalMoves.length; i++){
       double heuristicMove = -19998;
-    
+
       nextWs = new WorkingState(nextPiece, legalMoves[i][ORIENT], legalMoves[i][SLOT], ws);
       if (!nextWs.lost) {
         heuristicMove = h.score(nextWs);
@@ -101,21 +101,21 @@ public class PlayerSkeleton {
 
       if (heuristicMove > maxHeuristic){
         bestMove = i;
-        maxHeuristic = heuristicMove;  
-      }    
+        maxHeuristic = heuristicMove;
+      }
       // int[][] field = new int[ROWS][COLS];
       // int[] top = new int[COLS];
       // copyField(field, s.getField());
       // copyTop(top, s.getTop());
-      
+
       // if (makeMove(field, top, turn, nextPiece, legalMoves[i][ORIENT], legalMoves[i][SLOT])) {
       //   heuristicMove = getHeuristic(field, top);
       // }
-      
+
       // it would be great if we could make a copy of state
       // int[][] newState = s.testMove(legalMoves[i][ORIENT], legalMoves[i][SLOT]);
       // double heuristicMove = getHeuristic(newState);
-        
+
       // System.out.println(i + ", " + heuristicMove);
 >>>>>>> 11dd0f634e3239653e8745a023235bfa6c37a64d
     }
@@ -254,14 +254,14 @@ public class PlayerSkeleton {
         }
     };
 
-  
+
   public float getNextHeuristic(WorkingState ws, double[] weights){
 =======
-  
-  public double getNextHeuristic(WorkingState ws, double[] weights){    
+
+  public double getNextHeuristic(WorkingState ws, double[] weights){
 >>>>>>> 11dd0f634e3239653e8745a023235bfa6c37a64d
     int[][][] legalMoves = new int[N_PIECES][][];
-    
+
     // generate legal moves
     for(int i = 0; i < N_PIECES; i++) {
       //figure number of legal moves
@@ -282,44 +282,44 @@ public class PlayerSkeleton {
           n++;
         }
       }
-    }                                         
-    
+    }
+
     WorkingState nextWs;
     double[] nextHeuristic = new double[N_PIECES];
     Heuristics nextH = new Heuristics(weights);
-    
+
     for (int i = 0; i < N_PIECES; i++){
-      nextHeuristic[i] = -9999;  
+      nextHeuristic[i] = -9999;
     }
-    
+
     // actual loop
     for (int n = 0; n < N_PIECES; n++){
       for (int i = 0; i < legalMoves[n].length; i++){
         nextWs = new WorkingState(n, legalMoves[n][i][ORIENT], legalMoves[n][i][SLOT], ws);
-      
+
         double heuristicNextMove = -9999;
-      
+
         if (!nextWs.lost) {
           heuristicNextMove = nextH.score(nextWs);
         }
-      
+
         if (heuristicNextMove > nextHeuristic[n]){
-          nextHeuristic[n] = heuristicNextMove;  
+          nextHeuristic[n] = heuristicNextMove;
         }
-      }  
+      }
     }
-    
+
     double total = 0;
     for (double n: nextHeuristic) {
-      total += n;  
+      total += n;
       // System.out.println(total);
-    } 
-    
+    }
+
     double result = total / (double)N_PIECES;
     // System.out.println(result);
-    return result;  
+    return result;
   }
-  
+
 <<<<<<< HEAD
 
 
@@ -335,7 +335,7 @@ public class PlayerSkeleton {
     pBottom = s.getpBottom();
     pHeight = s.getpHeight();
     pTop = s.getpTop();
-    
+
     new TFrame(s);
     PlayerSkeleton p = new PlayerSkeleton();
     while(!s.hasLost()) {
@@ -343,7 +343,7 @@ public class PlayerSkeleton {
       s.draw();
       s.drawNext(0,0);
       try {
-        Thread.sleep(1); 
+        Thread.sleep(1);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
@@ -422,31 +422,31 @@ public class PlayerSkeleton {
       for(int c = 1; c < pWidth[nextPiece][orient];c++) {
         height = Math.max(height,top[slot+c]-pBottom[nextPiece][orient][c]);
       }
-      
+
       //check if game ended
       if(height+pHeight[nextPiece][orient] >= ROWS) {
         lost = true;
         return new MoveResult(field, top, turn, true, 0);
       }
 
-      
+
       //for each column in the piece - fill in the appropriate blocks
       for(int i = 0; i < pWidth[nextPiece][orient]; i++) {
-        
+
         //from bottom to top of brick
         for(int h = height+pBottom[nextPiece][orient][i]; h < height+pTop[nextPiece][orient][i]; h++) {
           // System.out.println("h: " + h);
           field[h][i+slot] = turn;
         }
       }
-      
+
       //adjust top
       for(int c = 0; c < pWidth[nextPiece][orient]; c++) {
         top[slot+c]=height+pTop[nextPiece][orient][c];
       }
-      
+
       int rowsCleared = 0;
-      
+
       //check for full rows - starting at the top
       for(int r = height+pHeight[nextPiece][orient]-1; r >= height; r--) {
         //check all columns in the row
@@ -491,7 +491,7 @@ public class PlayerSkeleton {
     @Override
     public int getRowsCleared() {
       return cleared;
-    }  
+    }
 
     @Override
     public int getTurnNumber() {
@@ -625,7 +625,7 @@ public class PlayerSkeleton {
 =======
 
       double heuristic = 0;
-      
+
 >>>>>>> 11dd0f634e3239653e8745a023235bfa6c37a64d
       int maxHeight = getMaxHeight();
       int totalHeight =  getTotalHeight();
@@ -652,7 +652,7 @@ public class PlayerSkeleton {
 
       return heuristic;
 =======
-      
+
       heuristic -= (double)(weights[0]*maxHeight);
       heuristic -= (double)(weights[1]*totalHeight);
       heuristic -= (double)(weights[2]*bumpiness);
@@ -663,8 +663,8 @@ public class PlayerSkeleton {
       heuristic -= (double)(weights[7]*numHoleCols);
       heuristic -= (double)(weights[8]*concavity);
       heuristic += (double)(weights[9]*(double)rowsCleared);
-      
-      return heuristic;  
+
+      return heuristic;
 >>>>>>> 11dd0f634e3239653e8745a023235bfa6c37a64d
     }
 
@@ -713,9 +713,9 @@ public class PlayerSkeleton {
         }
       }
 =======
-          holeDepth++;  
-        } 
-      } 
+          holeDepth++;
+        }
+      }
 >>>>>>> 11dd0f634e3239653e8745a023235bfa6c37a64d
       // System.out.println(holes);
       int[] result = {holes, maxHoleHeight, holeDepth, IntStream.of(rowHoles).sum(), IntStream.of(colHoles).sum()};
