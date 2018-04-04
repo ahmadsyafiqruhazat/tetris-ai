@@ -39,23 +39,20 @@ public class PlayerSkeleton {
     // prune rate is the % of nodes we disregard at every "max" layer as we move deeper to calculate
     private static double PRUNE_RATE = 0.6;
 
-//
-//
-//
 //    //implement this function to have a working system
 //    public int pickMove(State s, int[][] legalMoves) {
 //        int bestMove = 0;
-//        float maxHeuristic = -19998;
+//        double maxHeuristic = -19998;
 //        int nextPiece = s.getNextPiece();
 //        WorkingState ws = new WorkingState(s);
-//        float[] weights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
-//        float[] nextWeights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
+//        double[] weights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
+//        double[] nextWeights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
 //        Heuristics h = new Heuristics(weights);
 //
 //        WorkingState nextWs;
 //
 //        for (int i = 0; i < legalMoves.length; i++){
-//            float heuristicMove = -19998;
+//            double heuristicMove = -19998;
 //
 //            nextWs = new WorkingState(nextPiece, legalMoves[i][ORIENT], legalMoves[i][SLOT], ws);
 //
@@ -67,7 +64,7 @@ public class PlayerSkeleton {
 //            }
 //
 //            long midTime = System.nanoTime();
-//            System.out.println("Evaluate: " + (midTime - startTime));
+////            System.out.println("Evaluate: " + (midTime - startTime));
 //
 ////      System.out.println("evaluating move: Piece - " + nextPiece + " Position - " + legalMoves[i][SLOT] + " " +
 ////              "Orientation - " + legalMoves[i][ORIENT] );
@@ -81,27 +78,13 @@ public class PlayerSkeleton {
 //                bestMove = i;
 //                maxHeuristic = heuristicMove;
 //            }
-//            // int[][] field = new int[ROWS][COLS];
-//            // int[] top = new int[COLS];
-//            // copyField(field, s.getField());
-//            // copyTop(top, s.getTop());
-//
-//            // if (makeMove(field, top, turn, nextPiece, legalMoves[i][ORIENT], legalMoves[i][SLOT])) {
-//            //   heuristicMove = getHeuristic(field, top);
-//            // }
-//
-//            // it would be great if we could make a copy of state
-//            // int[][] newState = s.testMove(legalMoves[i][ORIENT], legalMoves[i][SLOT]);
-//            // float heuristicMove = getHeuristic(newState);
-//
-//            // System.out.println(i + ", " + heuristicMove);
 //        }
 //
 ////    System.out.println("new maxScore: " + maxHeuristic + " move: " + bestMove);
 //        // System.out.println(bestMove);
 //        return bestMove;
 //    }
-
+//
     //implement this function to have a working system
     public int pickMove(State s, int[][] legalMoves) {
         int nextPiece = s.getNextPiece();

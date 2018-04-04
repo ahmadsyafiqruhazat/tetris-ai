@@ -47,6 +47,7 @@ public class Chromosome {
             Float>() {
         @Override
         public Float evaluate(Double[] genes) {
+            System.out.println("Evaluating fitness");
             double[] weights = new double[Constants.defaultGeneLength];
             for (int i = 0; i < Constants.defaultGeneLength; i++) {
                 weights[i] = genes[i];
@@ -61,6 +62,7 @@ public class Chromosome {
 
         @Override
         public Float execute(Iterable<Float> inputs) {
+            System.out.println("Taking average");
             int count = 0;
             float sum = 0.0f;
 
