@@ -25,6 +25,8 @@ public class Particle {
     private double[] pBest;
     private int pBestFitness;
 
+    private boolean hasUpdated = true;
+
     private ArrayList<Double[]> allPositions = new ArrayList<>();
     private PlayerSkeleton.ConcurrentExecutor concurrentExecutor = new PlayerSkeleton.ConcurrentExecutor(new
             ForkJoinPool());
@@ -110,6 +112,7 @@ public class Particle {
     // TODO: Parallelise
     // TODO: Something other than average?
     private void updateFitness() {
+        hasUpdated = true;
         float result = 0;
         Double[] weights = new Double[Constants.defaultGeneLength];
         for (int i = 0; i < Constants.defaultGeneLength; i++) {
@@ -221,6 +224,7 @@ public class Particle {
     }
 
     public double[] getGenes() {
+        hasUpdated = false;
         return position;
     }
 
@@ -230,6 +234,7 @@ public class Particle {
     }
 
     public void mutateGene(int index, double value) {
+        hasUpdated = false;
         position[index] += value;
         fitness = 0;
     }
@@ -256,6 +261,10 @@ public class Particle {
     }
 
     public int getFitness() {
+        if(!hasUpdated || fitness==0) {
+            updateFitness();
+            System.out.println(String.valueOf(hasUpdated) + " " + String.valueOf(fitness));
+        }
         return fitness;
     }
 
