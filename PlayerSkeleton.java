@@ -2,6 +2,8 @@ import java.lang.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 
@@ -32,7 +34,8 @@ public class PlayerSkeleton {
   private ConcurrentExecutor concurrentExecutor;
   private MoveEvaluator evaluator;
 
-  private ArrayList<Move> possibleMoves = new ArrayList<Move>();
+  private CopyOnWriteArrayList<Move> possibleMoves = new CopyOnWriteArrayList<>();
+//  private ArrayList<Move> possibleMoves = new ArrayList<>();
 
   public static void main(String[] args) {
       State s = new State();
@@ -59,38 +62,6 @@ public class PlayerSkeleton {
       System.out.println("You have completed " + s.getRowsCleared() + " rows.");
 
   }
-
-//  //implement this function to have a working system
-//  public int pickMove(State s, int[][] legalMoves) {
-//    int bestMove = 0;
-//    float maxHeuristic = -19998;
-//    int nextPiece = s.getNextPiece();
-//    WorkingState ws = new WorkingState(s);
-//    double[] weights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
-//    double[] nextWeights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
-//    Heuristics h = new Heuristics(weights);
-//
-//    WorkingState nextWs;
-//
-//    for (int i = 0; i < legalMoves.length; i++){
-//      float heuristicMove = -19998;
-//
-//      nextWs = new WorkingState(nextPiece, legalMoves[i][ORIENT], legalMoves[i][SLOT], ws);
-//      if (!nextWs.lost) {
-//        heuristicMove = h.score(nextWs);
-//      }
-//
-//      heuristicMove += getNextHeuristic(nextWs, nextWeights);
-//
-//      if (heuristicMove > maxHeuristic){
-//        bestMove = i;
-//        maxHeuristic = heuristicMove;
-//      }
-//    }
-//
-//    return bestMove;
-//  }
-
     //implement this function to have a working system
     public int pickMove(State s, int[][] legalMoves) {
         int nextPiece = s.getNextPiece();
@@ -105,7 +76,7 @@ public class PlayerSkeleton {
           int position = legalMoves[i][SLOT];
           possibleMoves.add(new Move(state, i, nextPiece, orientation, position));
       }
-      System.out.println("Num of possible moves: " + possibleMoves.size());
+//      System.out.println("Num of possible moves: " + possibleMoves.size());
       return concurrentExecutor.execute(EVAL_MOVE_FUNC, PICK_MOVE_FUNC, possibleMoves);
   }
 
@@ -145,21 +116,57 @@ public class PlayerSkeleton {
       @Override
       public EvaluationResult evaluate(Move move) {
           WorkingState state = move.getState();
+          long startTime = System.nanoTime();
           MoveResult moveResult = state.makeSpecificMove(move.getPiece(),
                   move.getOrientation(), move.getPosition());
-          float nextScore = getNextHeuristic(moveResult.getState(), nextWeights);
-          float score = evaluator.evaluate(moveResult) + nextScore;
-//          float score = getNextHeuristic(state, weights);
+          long midTime = System.nanoTime();
+          System.out.println("Make specific move: " + (midTime - startTime));
+//          float nextScore = getNextHeuristic(moveResult.getState(), nextWeights);
+          float score = evaluator.evaluate(moveResult);
+          long intTime = System.nanoTime();
+
+          System.out.println("Evaluate: " + (intTime - midTime));
+          int[][] legalMoves = state.legalMoves();
+          int nextPiece = state.getNextPiece();
+          for (int moveIndex = 0; moveIndex < legalMoves.length; ++moveIndex) {
+              int orientation = legalMoves[moveIndex][ORIENT];
+              int position = legalMoves[moveIndex][SLOT];
+              possibleMoves.add(new Move(state, moveIndex, nextPiece,
+                      orientation, position));
+          }
+          long intTime2 = System.nanoTime();
+
+          System.out.println("Find possible moves: " + (intTime2 - intTime));
+//          ConcurrentExecutor newExecutor = new ConcurrentExecutor(ForkJoinPool.commonPool());
+          score += concurrentExecutor.execute(EVAL_FURTHER_MOVE_FUNC, PROBE_MOVE_FUNC, possibleMoves);
+          long endTime = System.nanoTime();
+
+          System.out.println("Next move: " + (endTime - intTime2));
+//          System.out.println("evaluating move: Piece - " + move.getPiece() + " Position - " + move.getPosition() + " " +
+//                  "Orientation " +
+//                  "- " + move.getOrientation() );
           return new EvaluationResult(move.getIndex(), score);
       }
-
   };
+
+
+    private final Evaluator<Move, EvaluationResult> EVAL_FURTHER_MOVE_FUNC = new Evaluator<Move, EvaluationResult>() {
+        @Override
+        public EvaluationResult evaluate(Move move) {
+            WorkingState state = move.getState();
+            MoveResult moveResult = state.makeSpecificMove(move.getPiece(),
+                    move.getOrientation(), move.getPosition());
+            float score = evaluator.evaluate(moveResult);
+            return new EvaluationResult(move.getIndex(), score);
+        }
+    };
 
 
   private static final Executor<EvaluationResult, Integer> PICK_MOVE_FUNC = new Executor<EvaluationResult,
             Integer>() {
+      @Override
       public Integer execute(Iterable<EvaluationResult> results) {
-          float maxScore = -19998;
+          float maxScore = -Float.MAX_VALUE;
           int move = -1;
 
           for (EvaluationResult result : results) {
@@ -170,12 +177,30 @@ public class PlayerSkeleton {
                   move = result.getMove();
               }
           }
-          System.out.println("new maxScore: " + maxScore + " move: " + move);
+//          System.out.println("new maxScore: " + maxScore + " move: " + move);
 
           return move;
       }
 
   };
+
+
+    private static final Executor<EvaluationResult, Float> PROBE_MOVE_FUNC = new Executor<EvaluationResult,
+            Float>() {
+        @Override
+        public Float execute(Iterable<EvaluationResult> results) {
+            float maxScore = -Float.MAX_VALUE;
+
+            for (EvaluationResult result : results) {
+                float score = result.getScore();
+                if (score > maxScore) {
+                    maxScore = score;
+                }
+            }
+
+            return maxScore;
+        }
+    };
 
   
   public float getNextHeuristic(WorkingState ws, double[] weights){
@@ -660,6 +685,15 @@ public class PlayerSkeleton {
     @Override
     protected boolean exec() {
       ArrayList<ForkJoinTask<DstT>> applyTasks = new ArrayList<ForkJoinTask<DstT>>();
+
+//      Iterator<SrcT> iter = inputs.iterator();
+//
+//        while (iter.hasNext()) {
+//            SrcT input = iter.next();
+//
+//            applyTasks.add(new ApplyTask(input));
+//        }
+
       for (SrcT input : inputs) {
         applyTasks.add(new ApplyTask(input));
       }
