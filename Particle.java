@@ -110,6 +110,7 @@ public class Particle {
     // TODO: Parallelise
     // TODO: Something other than average?
     private void updateFitness() {
+        allPositions.clear();
         float result = 0;
         Double[] weights = new Double[Constants.defaultGeneLength];
         for (int i = 0; i < Constants.defaultGeneLength; i++) {
@@ -118,6 +119,8 @@ public class Particle {
         for (int i = 0; i < Constants.NUM_RUNS; i++) {
             allPositions.add(weights);
         }
+
+        System.out.println("Number of runs: " + allPositions.size());
 
         result = concurrentExecutor.execute(FITNESS_FUNC, AVG_SCORE, allPositions);
         fitness = (int) result;
