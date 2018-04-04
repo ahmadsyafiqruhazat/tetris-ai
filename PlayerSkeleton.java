@@ -102,6 +102,13 @@ public class PlayerSkeleton {
 //        return bestMove;
 //    }
 
+    //implement this function to have a working system
+    public int pickMove(State s, int[][] legalMoves) {
+        int nextPiece = s.getNextPiece();
+        WorkingState currentState = new WorkingState(s);
+        return pickMove(currentState, nextPiece, legalMoves);
+    }
+
     public static void main(String[] args){
         State s = new State();
         pOrients = s.getpOrients();
@@ -176,32 +183,32 @@ public class PlayerSkeleton {
         @Override
         public EvaluationResult evaluate(Move move) {
             WorkingState state = move.getState();
-            long startTime = System.nanoTime();
+//            long startTime = System.nanoTime();
             MoveResult moveResult = state.makeSpecificMove(move.getPiece(),
                     move.getOrientation(), move.getPosition());
-            long midTime = System.nanoTime();
-            System.out.println("Make specific move: " + (midTime - startTime));
-//          float nextScore = getNextHeuristic(moveResult.getState(), nextWeights);
-            float score = evaluator.evaluate(moveResult);
-            long intTime = System.nanoTime();
+//            long midTime = System.nanoTime();
+//            System.out.println("Make specific move: " + (midTime - startTime));
+          float nextScore = getNextHeuristic(moveResult.getState(), nextWeights);
+          float score = evaluator.evaluate(moveResult) + nextScore;
+//            long intTime = System.nanoTime();
+//
+////            System.out.println("Evaluate: " + (intTime - midTime));
+//            int[][] legalMoves = state.legalMoves();
+//            int nextPiece = state.getNextPiece();
+//            for (int moveIndex = 0; moveIndex < legalMoves.length; ++moveIndex) {
+//                int orientation = legalMoves[moveIndex][ORIENT];
+//                int position = legalMoves[moveIndex][SLOT];
+//                possibleMoves.add(new Move(state, moveIndex, nextPiece,
+//                        orientation, position));
+//            }
+//            long intTime2 = System.nanoTime();
+//
+////            System.out.println("Find possible moves: " + (intTime2 - intTime));
+////          ConcurrentExecutor newExecutor = new ConcurrentExecutor(ForkJoinPool.commonPool());
+//            score += concurrentExecutor.execute(EVAL_FURTHER_MOVE_FUNC, PROBE_MOVE_FUNC, possibleMoves);
+//            long endTime = System.nanoTime();
 
-            System.out.println("Evaluate: " + (intTime - midTime));
-            int[][] legalMoves = state.legalMoves();
-            int nextPiece = state.getNextPiece();
-            for (int moveIndex = 0; moveIndex < legalMoves.length; ++moveIndex) {
-                int orientation = legalMoves[moveIndex][ORIENT];
-                int position = legalMoves[moveIndex][SLOT];
-                possibleMoves.add(new Move(state, moveIndex, nextPiece,
-                        orientation, position));
-            }
-            long intTime2 = System.nanoTime();
-
-            System.out.println("Find possible moves: " + (intTime2 - intTime));
-//          ConcurrentExecutor newExecutor = new ConcurrentExecutor(ForkJoinPool.commonPool());
-            score += concurrentExecutor.execute(EVAL_FURTHER_MOVE_FUNC, PROBE_MOVE_FUNC, possibleMoves);
-            long endTime = System.nanoTime();
-
-            System.out.println("Next move: " + (endTime - intTime2));
+//            System.out.println("Next move: " + (endTime - intTime2));
 //          System.out.println("evaluating move: Piece - " + move.getPiece() + " Position - " + move.getPosition() + " " +
 //                  "Orientation " +
 //                  "- " + move.getOrientation() );
@@ -321,7 +328,7 @@ public class PlayerSkeleton {
 
         double result = total / (double)N_PIECES;
         // System.out.println(result);
-        return result;
+        return (float) result;
     }
 
 

@@ -1,4 +1,5 @@
 import java.util.Random;
+import java.util.concurrent.ForkJoinPool;
 
 public class Particle {
     private static final int INIT_FITNESS = 0;
@@ -64,7 +65,7 @@ public class Particle {
     }
 
     private int getOneFitness() {
-        PlayerSkeleton p = new PlayerSkeleton();
+        PlayerSkeleton p = new PlayerSkeleton(new ForkJoinPool());
         return  p.run(position);
     }
 
