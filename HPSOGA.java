@@ -8,9 +8,13 @@ public class HPSOGA {
         myPop =  new Population(Constants.POPULATION_SIZE, true);
         ga = new GeneticAlgorithm();
         for(int i = 0 ; i< Constants.MAX_ITERATIONS; i++) {
-            pso = new ParticleSwarmOptimization(myPop);
+            System.out.println("**********************");
+            System.out.println("Iteration: " + i);
+            System.out.println("Running PSO");
+            pso = new ParticleSwarmOptimization(myPop, i);
             myPop.setChromosomes(pso.run());
-            myPop = ga.run(myPop);
+            System.out.println("Running GA");
+            myPop = ga.run(myPop, i);
         }
     }
     public static void main(String[] args){

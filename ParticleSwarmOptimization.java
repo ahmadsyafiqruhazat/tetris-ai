@@ -13,6 +13,7 @@ public class ParticleSwarmOptimization {
     private static final double SOCIAL_WEIGHT = 2.5;
     private static final double[] gBest = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     private static final int gBestFitness = 0;
+    private final int iterationNo;
 
     private static final int NUM_ITERATIONS = 10;
 
@@ -27,22 +28,29 @@ public class ParticleSwarmOptimization {
         double[] pBest = particles.get(n).getPBest();
         int pBestFitness = particles.get(n).getPBestFitness();
 
+        System.out.println("Particle "  + n + " Position: ");
+
         for (int i = 0; i < position.length; i++) {
             System.out.print(position[i] + " ");
         }
-        System.out.println();
+
+        System.out.println("Particle "  + n + " Velocity: ");
 
         for (int i = 0; i < velocity.length; i++) {
             System.out.print(velocity[i] + " ");
         }
-        System.out.println();
+
+        System.out.println("Particle "  + n + " Fitness: ");
 
         System.out.println(fitness);
+
+        System.out.println("Particle "  + n + " Local Best Position: ");
 
         for (int i = 0; i < pBest.length; i++) {
             System.out.print(pBest[i] + " ");
         }
-        System.out.println();
+
+        System.out.println("Particle "  + n + " Local Best Fitness: ");
 
         System.out.println(pBestFitness);
     }
@@ -53,11 +61,13 @@ public class ParticleSwarmOptimization {
             System.out.println("---");
         }
 
+        System.out.println("Global Best Position: ");
+
         for (int i = 0; i < Particle.gBest.length; i++) {
             System.out.print(Particle.gBest[i] + " ");
         }
         System.out.println();
-        System.out.println(Particle.gBestFitness);
+        System.out.println("Global Best Fitness: " + Particle.gBestFitness);
 
         System.out.println("===");
     }
@@ -71,12 +81,13 @@ public class ParticleSwarmOptimization {
 
     public void runAndPrintIterations(int num) {
         for (int i = 0; i < num; i++) {
+            System.out.println("HPSOGA Iteration: " + iterationNo + " PSO Iteration: " + i);
             runOneIteration();
             printSwarmData();
         }
     }
 
-    public ParticleSwarmOptimization(Population p) {
+    public ParticleSwarmOptimization(Population p, int i) {
         Particle.MAX = MAX;
         Particle.MIN = MIN;
         Particle.INERTIA_WEIGHT = INERTIA_WEIGHT;
@@ -85,6 +96,7 @@ public class ParticleSwarmOptimization {
         Particle.gBest = gBest;
         Particle.gBestFitness = gBestFitness;
         particles = p.chromosomes;
+        iterationNo = i;
     }
 
     public ArrayList<Particle> run() {

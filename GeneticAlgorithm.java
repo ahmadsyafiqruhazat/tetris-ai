@@ -86,7 +86,7 @@ public class GeneticAlgorithm {
         return new Pair<Particle,Integer>(fittest.getKey(), pos.get(fittest.getValue()));
     }
 
-    public Population run( Population myPop) {
+    public Population run( Population myPop, int i) {
 
         int generationCount = 0;
         int lostGeneration = 0;
@@ -106,7 +106,7 @@ public class GeneticAlgorithm {
 //                break;
 //            }
             generationCount++;
-            System.out.println("Generation: " + generationCount + " Fittest: " + myPop.getFittest().getKey().getFitness() + " Max " + maxFitness);
+            System.out.println("Generation: " + i + " Fittest: " + myPop.getFittest().getKey().getFitness() + " Max " + maxFitness);
             myPop = evolvePopulation(myPop);
 //            System.out.println("Lost " + lostGeneration + " Max: "+  maxFitness);
 //        }
