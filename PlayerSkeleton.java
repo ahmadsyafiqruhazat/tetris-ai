@@ -47,6 +47,12 @@ public class PlayerSkeleton {
         WorkingState ws = new WorkingState(s);
         double[] weights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
         double[] nextWeights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
+//        double[] weights = {7.777049566227959, 6.249963955307919, 15.025267484201208, 18.083431916001572,
+//                12.608808031021113, 19.656750655339692, 8.005170457533438, -4.787722424760801, -8.089689910134979,
+//                2.28525592482589  };
+//        double[] nextWeights = {7.777049566227959, 6.249963955307919, 15.025267484201208, 18.083431916001572,
+//                12.608808031021113, 19.656750655339692, 8.005170457533438, -4.787722424760801, -8.089689910134979,
+//                2.28525592482589  };
         Heuristics h = new Heuristics(weights);
 
         WorkingState nextWs;
@@ -769,17 +775,10 @@ public class PlayerSkeleton {
         protected boolean exec() {
             ArrayList<ForkJoinTask<DstT>> applyTasks = new ArrayList<ForkJoinTask<DstT>>();
 
-//      Iterator<SrcT> iter = inputs.iterator();
-//
-//        while (iter.hasNext()) {
-//            SrcT input = iter.next();
-//
-//            applyTasks.add(new ApplyTask(input));
-//        }
-
             for (SrcT input : inputs) {
                 applyTasks.add(new ApplyTask(input));
             }
+
             invokeAll(applyTasks);
 
             for (ForkJoinTask<DstT> applyTask : applyTasks) {

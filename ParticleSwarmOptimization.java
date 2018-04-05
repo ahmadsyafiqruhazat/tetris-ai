@@ -106,11 +106,10 @@ public class ParticleSwarmOptimization {
     }
 
     private static final PlayerSkeleton.Evaluator<Particle, Particle> EVAL_PARTICLE = new PlayerSkeleton
-            .Evaluator<Particle,
-            Particle>() {
+            .Evaluator<Particle, Particle>() {
         @Override
         public Particle evaluate(Particle particle) {
-            System.out.println("Evaluating particle " + particle.toString());
+//            System.out.println("Evaluating particle " + particle.toString());
             particle.update();
             return particle;
         }
