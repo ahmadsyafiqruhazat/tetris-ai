@@ -76,7 +76,7 @@ public class PlayerSkeleton {
 //      System.out.println("evaluating move: Piece - " + nextPiece + " Position - " + legalMoves[i][SLOT] + " " +
 //              "Orientation - " + legalMoves[i][ORIENT] );
 
-            heuristicMove += getNextHeuristic(nextWs, nextWeights);
+            //heuristicMove += getNextHeuristic(nextWs, nextWeights);
             long endTime = System.nanoTime();
 
 //            System.out.println("Next move: " + (endTime - midTime));
