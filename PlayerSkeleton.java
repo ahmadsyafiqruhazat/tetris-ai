@@ -52,7 +52,7 @@ public class PlayerSkeleton {
     // System.out.println("Unpruned: ");
     for (int i=0; i<(int)((1-PRUNE_RATE_INITIAL)*(possibilities.length)); i++) {
       // we only want the score of the leaf, it does not matter what the middle nodes scores are right?
-      possibilities[i].setScore(ldfsGetNextHeuristic(possibilities[i].state, nextWeights, 1));
+      possibilities[i].setScore(ldfsGetNextHeuristic(possibilities[i].state, nextWeights, 0));
       if (possibilities[i].score > maxHeuristic) {
         bestMove = possibilities[i].idx;
         maxHeuristic = possibilities[i].score;
