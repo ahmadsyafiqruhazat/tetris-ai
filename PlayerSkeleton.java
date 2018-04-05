@@ -195,27 +195,26 @@ public class PlayerSkeleton {
     pTop = State.getpTop();
 
     // generate legal moves - done globally for use in ldfs
-    for (int i = 0; i < N_PIECES; i++) {
+    for(int i = 0; i < N_PIECES; i++) {
       //figure number of legal moves
       int n = 0;
-      for (int j = 0; j < pOrients[i]; j++) {
+      for(int j = 0; j < pOrients[i]; j++) {
         //number of locations in this orientation
-        n += COLS + 1 - pWidth[i][j];
+        n += COLS+1-pWidth[i][j];
       }
       //allocate space
       legalMoves[i] = new int[n][2];
       //for each orientation
       n = 0;
-      for (int j = 0; j < pOrients[i]; j++) {
+      for(int j = 0; j < pOrients[i]; j++) {
         //for each slot
-        for (int k = 0; k < COLS + 1 - pWidth[i][j]; k++) {
+        for(int k = 0; k < COLS+1-pWidth[i][j];k++) {
           legalMoves[i][n][ORIENT] = j;
           legalMoves[i][n][SLOT] = k;
           n++;
         }
       }
     }
-
     new TFrame(s);
 
     ForkJoinPool forkJoinPool = new ForkJoinPool();
@@ -419,8 +418,11 @@ public class PlayerSkeleton {
       this.field = s.getField();
       this.top = s.getTop();
       this.rowsCleared = s.getRowsCleared();
-      double heuristic = 0;
 
+      // score: the higher the better, but
+      // it can be both positive and negative
+      double heuristic = 0; 
+      
       int maxHeight = getMaxHeight();
       int totalHeight = getTotalHeight();
       int bumpiness = getBumpiness();
