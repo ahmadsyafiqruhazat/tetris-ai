@@ -9,8 +9,6 @@ import java.util.concurrent.ForkJoinTask;
 
 import java.util.stream.IntStream;
 
-import com.sun.rowset.internal.Row;
-
 public class PlayerSkeleton {
 
     public static final int COLS = 10;
@@ -26,8 +24,12 @@ public class PlayerSkeleton {
     private static int[][] pHeight;
     private static int[][][] pBottom;
     private static int[][][] pTop;
-    private double[] weights;
-    private double[] nextWeights;
+
+    private double[] weights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
+    private double[] nextWeights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
+    private static double PRUNE_RATE_INITIAL = 0.7;
+    private static double PRUNE_RATE_FINAL = 0.8;
+    private static int[][][] legalMoves = new int[N_PIECES][][];
 
     // ForkJoinPool for concurrent execution
     private ForkJoinPool forkJoinExecutor;
@@ -36,17 +38,12 @@ public class PlayerSkeleton {
     private CopyOnWriteArrayList<Move> possibleMoves = new CopyOnWriteArrayList<>();
 //  private ArrayList<Move> possibleMoves = new ArrayList<>();
 
-    // prune rate is the % of nodes we disregard at every "max" layer as we move deeper to calculate
-    private static double PRUNE_RATE = 0.6;
-
     //implement this function to have a working system
     public int pickMove(State s, int[][] legalMoves) {
         int bestMove = 0;
-        double maxHeuristic = -19998;
+        double maxHeuristic = -9999;
         int nextPiece = s.getNextPiece();
         WorkingState ws = new WorkingState(s);
-        double[] weights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
-        double[] nextWeights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
 //        double[] weights = {7.777049566227959, 6.249963955307919, 15.025267484201208, 18.083431916001572,
 //                12.608808031021113, 19.656750655339692, 8.005170457533438, -4.787722424760801, -8.089689910134979,
 //                2.28525592482589  };
