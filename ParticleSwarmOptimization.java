@@ -31,14 +31,16 @@ public class ParticleSwarmOptimization {
         System.out.println("Particle "  + n + " Position: ");
 
         for (int i = 0; i < position.length; i++) {
-            System.out.print(position[i] + " ");
+            System.out.print(position[i] + ", ");
         }
+        System.out.println();
 
         System.out.println("Particle "  + n + " Velocity: ");
 
         for (int i = 0; i < velocity.length; i++) {
-            System.out.print(velocity[i] + " ");
+            System.out.print(velocity[i] + ", ");
         }
+        System.out.println();
 
         System.out.println("Particle "  + n + " Fitness: ");
 
@@ -47,8 +49,10 @@ public class ParticleSwarmOptimization {
         System.out.println("Particle "  + n + " Local Best Position: ");
 
         for (int i = 0; i < pBest.length; i++) {
-            System.out.print(pBest[i] + " ");
+            System.out.print(pBest[i] + ", ");
         }
+
+        System.out.println();
 
         System.out.println("Particle "  + n + " Local Best Fitness: ");
 
@@ -58,18 +62,18 @@ public class ParticleSwarmOptimization {
     public void printSwarmData() {
         for (int i = 0; i < particles.size(); i++) {
             printParticleData(i);
-            System.out.println("---");
+            System.out.println("-----------");
         }
 
         System.out.println("Global Best Position: ");
 
         for (int i = 0; i < Particle.gBest.length; i++) {
-            System.out.print(Particle.gBest[i] + " ");
+            System.out.print(Particle.gBest[i] + ", ");
         }
         System.out.println();
         System.out.println("Global Best Fitness: " + Particle.gBestFitness);
 
-        System.out.println("===");
+        System.out.println("============");
     }
 
     public void runOneIteration() {
