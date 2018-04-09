@@ -100,16 +100,15 @@ public class ParticleSwarmOptimization {
         Particle.SOCIAL_WEIGHT = SOCIAL_WEIGHT;
         Particle.gBest = gBest;
         Particle.gBestFitness = gBestFitness;
-        particles = p.chromosomes;
+        particles = new CopyOnWriteArrayList<>();
+        particles.addAll(p.chromosomes);
         iterationNo = i;
     }
 
     public ArrayList<Particle> run() {
         runAndPrintIterations(Constants.PSO_ITERATIONS);
         ArrayList<Particle> result = new ArrayList<>();
-        for (int i = 0; i < particles.size(); i++) {
-            result.add(particles.get(i));
-        }
+        result.addAll(particles);
 
         return result;
     }
