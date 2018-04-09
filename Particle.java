@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ForkJoinPool;
 
 public class Particle {
@@ -27,7 +28,7 @@ public class Particle {
 
     private boolean hasUpdated  = true;
 
-    private ArrayList<Double[]> allPositions = new ArrayList<>();
+    private CopyOnWriteArrayList<Double[]> allPositions = new CopyOnWriteArrayList<>();
     private PlayerSkeleton.ConcurrentExecutor concurrentExecutor = new PlayerSkeleton.ConcurrentExecutor(new
             ForkJoinPool());
 

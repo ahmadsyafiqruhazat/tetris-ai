@@ -2,6 +2,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ForkJoinPool;
 
 public class ParticleSwarmOptimization {
@@ -17,7 +18,7 @@ public class ParticleSwarmOptimization {
 
     private static final int NUM_ITERATIONS = 10;
 
-    private ArrayList<Particle> particles;
+    private CopyOnWriteArrayList<Particle> particles;
     private PlayerSkeleton.ConcurrentExecutor concurrentExecutor = new PlayerSkeleton.ConcurrentExecutor(new
             ForkJoinPool());
 
@@ -105,8 +106,12 @@ public class ParticleSwarmOptimization {
 
     public ArrayList<Particle> run() {
         runAndPrintIterations(Constants.PSO_ITERATIONS);
+        ArrayList<Particle> result = new ArrayList<>();
+        for (int i = 0; i < particles.size(); i++) {
+            result.add(particles.get(i));
+        }
 
-        return particles;
+        return result;
     }
 
     private static final PlayerSkeleton.Evaluator<Particle, Particle> EVAL_PARTICLE = new PlayerSkeleton
