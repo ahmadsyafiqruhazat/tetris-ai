@@ -26,8 +26,7 @@ public class PlayerSkeleton {
     private static int[][] pHeight;
     private static int[][][] pBottom;
     private static int[][][] pTop;
-    private double[] weights;
-    private double[] nextWeights;
+    private double[] weights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
 
     // ForkJoinPool for concurrent execution
     private ForkJoinPool forkJoinExecutor;
@@ -45,14 +44,6 @@ public class PlayerSkeleton {
         double maxHeuristic = -19998;
         int nextPiece = s.getNextPiece();
         WorkingState ws = new WorkingState(s);
-        double[] weights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
-        double[] nextWeights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
-//        double[] weights = {7.777049566227959, 6.249963955307919, 15.025267484201208, 18.083431916001572,
-//                12.608808031021113, 19.656750655339692, 8.005170457533438, -4.787722424760801, -8.089689910134979,
-//                2.28525592482589  };
-//        double[] nextWeights = {7.777049566227959, 6.249963955307919, 15.025267484201208, 18.083431916001572,
-//                12.608808031021113, 19.656750655339692, 8.005170457533438, -4.787722424760801, -8.089689910134979,
-//                2.28525592482589  };
         Heuristics h = new Heuristics(weights);
 
         WorkingState nextWs;
@@ -76,7 +67,7 @@ public class PlayerSkeleton {
 //      System.out.println("evaluating move: Piece - " + nextPiece + " Position - " + legalMoves[i][SLOT] + " " +
 //              "Orientation - " + legalMoves[i][ORIENT] );
 
-            heuristicMove += getNextHeuristic(nextWs, nextWeights);
+            heuristicMove += getNextHeuristic(nextWs, weights);
             long endTime = System.nanoTime();
 
 //            System.out.println("Next move: " + (endTime - midTime));
@@ -123,15 +114,13 @@ public class PlayerSkeleton {
         this.forkJoinExecutor = forkJoinPool;
         this.concurrentExecutor = new ConcurrentExecutor(forkJoinPool);
         double[] newWeights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
-        double[] newNextWeights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
         this.weights = newWeights;
-        this.nextWeights = newNextWeights;
-        this.evaluator = new WeightedSumEvaluator(EVALUATORS, weights, nextWeights);
+        this.evaluator = new WeightedSumEvaluator(EVALUATORS, weights);
     }
 
-    public PlayerSkeleton(ForkJoinPool forkJoinPool, double[] weights, double[] nextWeights) {
+    public PlayerSkeleton(ForkJoinPool forkJoinPool, double[] weights) {
         this.concurrentExecutor = new ConcurrentExecutor(forkJoinPool);
-        this.evaluator = new WeightedSumEvaluator(EVALUATORS, weights, nextWeights);
+        this.evaluator = new WeightedSumEvaluator(EVALUATORS, weights);
     }
 
     public float getNextHeuristic(WorkingState ws, double[] weights){
@@ -876,12 +865,10 @@ public class PlayerSkeleton {
 
         private final MoveEvaluator[] evaluators;
         private final double[] weights;
-        private final double[] nextWeights;
 
-        public WeightedSumEvaluator(MoveEvaluator[] evaluators, double[] weights, double[] nextWeights) {
+        public WeightedSumEvaluator(MoveEvaluator[] evaluators, double[] weights) {
             this.evaluators = evaluators;
             this.weights = weights;
-            this.nextWeights = nextWeights;
         }
 
         @Override
@@ -905,7 +892,7 @@ public class PlayerSkeleton {
 
             for (int i = 0; i < evaluators.length; ++i) {
                 float score = evaluators[i].evaluate(moveResult);
-                sum += score * nextWeights[i];
+                sum += score * weights[i];
             }
 
             return sum;
