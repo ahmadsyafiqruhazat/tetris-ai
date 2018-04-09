@@ -26,7 +26,7 @@ public class PlayerSkeleton {
     private static int[][] pHeight;
     private static int[][][] pBottom;
     private static int[][][] pTop;
-    private double[] weights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
+    private double[] weights = Constants.defaultWeights;
 
     // ForkJoinPool for concurrent execution
     private ForkJoinPool forkJoinExecutor;
@@ -113,8 +113,6 @@ public class PlayerSkeleton {
     public PlayerSkeleton(ForkJoinPool forkJoinPool) {
         this.forkJoinExecutor = forkJoinPool;
         this.concurrentExecutor = new ConcurrentExecutor(forkJoinPool);
-        double[] newWeights = {1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1/3, 1.0f, 1.0f, 1/5, 1.0f};
-        this.weights = newWeights;
         this.evaluator = new WeightedSumEvaluator(EVALUATORS, weights);
     }
 
