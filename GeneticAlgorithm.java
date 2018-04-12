@@ -42,6 +42,20 @@ public class GeneticAlgorithm {
         return newPopulation;
     }
 
+    private static final PlayerSkeleton.Evaluator<Double[], Float> EVOLVE_FUNC = new PlayerSkeleton.Evaluator<Double[],
+            Float>() {
+        @Override
+        public Float evaluate(Double[] genes) {
+//            System.out.println("Evaluating fitness");
+            double[] weights = new double[Constants.defaultGeneLength];
+            for (int i = 0; i < Constants.defaultGeneLength; i++) {
+                weights[i] = genes[i];
+            }
+            int fitness = PlayerSkeleton.run(weights);
+            return (float) fitness;
+        }
+    };
+
     // Crossover chromosomes
 
     private static Particle[] crossover(Particle indiv1, Particle indiv2) {

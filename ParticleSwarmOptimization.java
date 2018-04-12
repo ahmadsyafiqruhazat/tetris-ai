@@ -28,25 +28,7 @@ public class ParticleSwarmOptimization {
         int fitness = particles.get(n).getFitness();
         double[] pBest = particles.get(n).getPBest();
         int pBestFitness = particles.get(n).getPBestFitness();
-
-        System.out.println("Particle "  + n + " Position: ");
-
-        for (int i = 0; i < position.length; i++) {
-            System.out.print(position[i] + ", ");
-        }
-        System.out.println();
-
-        System.out.println("Particle "  + n + " Velocity: ");
-
-        for (int i = 0; i < velocity.length; i++) {
-            System.out.print(velocity[i] + ", ");
-        }
-        System.out.println();
-
-        System.out.println("Particle "  + n + " Fitness: ");
-
-        System.out.println(fitness);
-
+        
         System.out.println("Particle "  + n + " Local Best Position: ");
 
         for (int i = 0; i < pBest.length; i++) {

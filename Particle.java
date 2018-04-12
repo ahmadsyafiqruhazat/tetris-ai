@@ -139,6 +139,7 @@ public class Particle implements Comparable<Particle> {
     }
 
     private void updateGBest() {
+        System.out.println("Current Global Best: " + gBestFitness + " Particle fitness: " + fitness);
         if (fitness > gBestFitness) {
             System.arraycopy(position, 0, gBest, 0, position.length);
             gBestFitness = fitness;
