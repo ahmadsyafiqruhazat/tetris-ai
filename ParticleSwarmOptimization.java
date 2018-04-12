@@ -43,6 +43,8 @@ public class ParticleSwarmOptimization {
     }
 
     public void printSwarmData() {
+
+        System.out.println("------ Current num of particles: " + particles.size());
         for (int i = 0; i < particles.size(); i++) {
             printParticleData(i);
             System.out.println("-----------");
