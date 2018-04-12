@@ -11,25 +11,35 @@ public class GeneticAlgorithm {
 
     // Evolve a population
     public static Population evolvePopulation(Population pop) {
+        Population newPopulation = new Population(pop.size(), false);
 
+        // Crossover population
         // Loop over the population size and create new chromosomes with
         // crossover
 
-        for (int i = 0; i <(int)(Constants.NUM_OFFSPRING*Constants.POPULATION_SIZE); i++) {
-            Pair<Particle,Integer> indiv1 = tournamentSelection(pop);
-            Pair<Particle,Integer> indiv2 = tournamentSelection(pop);
-            Particle[] newIndiv = crossover(indiv1.getKey(), indiv2.getKey());
-            pop.saveIndividual(newIndiv[0],indiv1.getValue());
-            pop.saveIndividual(newIndiv[1],indiv2.getValue());
+        for (int i = 0 ; i <(int)(Constants.NUM_OFFSPRING * pop.size()); i++) {
+            Particle indiv1 = tournamentSelection(pop);
+            Particle indiv2 = tournamentSelection(pop);
+            Particle[] newIndiv = crossover(indiv1, indiv2);
+            newPopulation.saveIndividual(newIndiv[0]);
+            newPopulation.saveIndividual(newIndiv[1]);
+        }
 
+        pop.sort();
+
+        for(int i = 0; i <pop.size()-(int)(Constants.NUM_OFFSPRING * pop.size()); i++){
+            if (i < 3) {
+                System.out.println("particle " + i + "'s fitness: " + pop.getIndividual(i).getFitness());
+            }
+            newPopulation.saveIndividual(pop.getIndividual(i));
         }
 
         // Mutate population
-        for (int i = 0; i < pop.size(); i++) {
-            mutate(pop.getIndividual(i));
+        for (int i = 0; i < newPopulation.size(); i++) {
+            mutate(newPopulation.getIndividual(i));
         }
 
-        return pop;
+        return newPopulation;
     }
 
     // Crossover chromosomes
@@ -64,14 +74,14 @@ public class GeneticAlgorithm {
             if (Math.random() <= Constants.mutationRate) {
                 // Create random gene
                 Random random = new Random();
-                double gene = random.nextDouble() * 0.4 - 0.2;
+                double gene = (random.nextDouble() * 0.4 - 0.2) + 1;
                 indiv.mutateGene(i, gene);
             }
         }
     }
 
     // Select chromosomes for crossover
-    private static Pair<Particle,Integer> tournamentSelection(Population pop) {
+    private static Particle tournamentSelection(Population pop) {
         // Create a tournament population
         Population tournament = new Population((int)(Constants.tournamentSize * Constants.POPULATION_SIZE), false);
         // For each place in the tournament get a random individual
@@ -83,7 +93,7 @@ public class GeneticAlgorithm {
         }
         // Get the fittest
         Pair<Particle,Integer>fittest = tournament.getFittest();
-        return new Pair<Particle,Integer>(fittest.getKey(), pos.get(fittest.getValue()));
+        return fittest.getKey();
     }
 
     public Population run( Population myPop, int i) {

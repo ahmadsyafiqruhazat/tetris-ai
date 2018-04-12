@@ -3,7 +3,7 @@ import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ForkJoinPool;
 
-public class Particle {
+public class Particle implements Comparable<Particle> {
     private static final int INIT_FITNESS = 0;
 
     public static final int DIMENSIONS = 10;
@@ -120,6 +120,7 @@ public class Particle {
         for (int i = 0; i < Constants.defaultGeneLength; i++) {
             weights[i] = position[i];
         }
+
         for (int i = 0; i < Constants.NUM_RUNS; i++) {
             allPositions.add(weights);
         }
@@ -152,11 +153,13 @@ public class Particle {
         double[] third = Calc.scale(Calc.subtract(gBest, position), rand2 * SOCIAL_WEIGHT);
         velocity = Calc.add(Calc.add(first, second), third);
         //bounceVelocity();
+
     }
 
     private void updatePosition() {
         position = Calc.add(position, velocity);
-        //bouncePosition();
+//        bouncePosition();
+
     }
 
     private void initializePosition() {
@@ -239,7 +242,7 @@ public class Particle {
 
     public void mutateGene(int index, double value) {
         hasUpdated = false;
-        position[index] += value;
+        position[index] *= value;
         fitness = 0;
     }
 
@@ -278,5 +281,11 @@ public class Particle {
     public int getPBestFitness() {
         return pBestFitness;
     }
+
+    @Override
+    public int compareTo(Particle particle) {
+        return this.getFitness() - particle.getFitness();
+    }
+
 }
 

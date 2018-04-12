@@ -7,6 +7,7 @@ public class Constants {
     public static final double NUM_OFFSPRING = 0.3;
     static final double tournamentSize = 0.1;
     static final int POPULATION_SIZE = 500;
+
     public static final int MAX_LOST_GENERATION = 20;
 
     // Number of runs averaged to get the fitness
@@ -14,6 +15,6 @@ public class Constants {
     public static int MAX_ITERATIONS = 1000;
     public static int PSO_ITERATIONS = 10;
     public static int MAX_MOVES = 500;
-    public static double[] defaultWeights = {11.275150219061857, 0.0, -0.06004746567662789, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-
+    public static double[] defaultWeights = {1209.4098328279626, 262.18896905458473, 2353.7774465963953, 1468.0480939912602, 2149.5993959051384,
+            698.3970222970199, 2488.5131794007, 585.3727557995206, -12537.76701300828, -35018.99578747197};
 }
