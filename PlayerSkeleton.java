@@ -25,8 +25,9 @@ public class PlayerSkeleton {
   private static int[][][] pBottom;
   private static int[][][] pTop;
 
-  private double[] weights = { 1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1 / 3, 1.0f, 1.0f, 1 / 5, 1.0f };
-  private double[] nextWeights = { 1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1 / 3, 1.0f, 1.0f, 1 / 5, 1.0f };
+
+  private double[] weights = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f};
+  private double[] nextWeights = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f};
   //        double[] weights = {7.777049566227959, 6.249963955307919, 15.025267484201208, 18.083431916001572,
   //                12.608808031021113, 19.656750655339692, 8.005170457533438, -4.787722424760801, -8.089689910134979,
   //                2.28525592482589  };
@@ -50,6 +51,7 @@ public class PlayerSkeleton {
     double maxHeuristic = -9999;
     int nextPiece = s.getNextPiece();
     WorkingState ws = new WorkingState(s);
+    
     Heuristics h = new Heuristics(weights);
 
     Possibility[] possibilities = new Possibility[legalMoves.length];
@@ -433,25 +435,21 @@ public class PlayerSkeleton {
       int numHoleRows = holesArray[3];
       int numHoleCols = holesArray[4];
       int concavity = getConcavity();
-
-      heuristic -= (double) (weights[0] * maxHeight);
-      heuristic -= (double) (weights[1] * totalHeight);
-      heuristic -= (double) (weights[2] * bumpiness);
-
-      //            System.out.println("height-related score: " + heuristic);
-
-      heuristic -= (double) (weights[3] * numHoles);
-      heuristic -= (double) (weights[4] * maxHoleHeight);
-      heuristic -= (double) (weights[5] * holeDepth);
-      heuristic -= (double) (weights[6] * numHoleRows);
-      heuristic -= (double) (weights[7] * numHoleCols);
-
-      heuristic -= (double) (weights[8] * concavity);
-      heuristic += (double) (weights[9] * (double) rowsCleared);
-
-      //            System.out.println("final score: " + heuristic);
-
-      return heuristic;
+      
+      heuristic -= (double)(weights[0]*maxHeight)/ROWS;  
+      heuristic -= (double)(weights[1]*totalHeight)/(ROWS*COLS);
+      heuristic -= (double)(weights[2]*bumpiness)/80;
+      heuristic -= (double)(weights[3]*numHoles)/400;
+      heuristic -= (double)(weights[4]*maxHoleHeight)/ROWS;
+      heuristic -= (double)(weights[5]*holeDepth)/200;
+      heuristic -= (double)(weights[6]*numHoleRows)/ROWS;
+      heuristic -= (double)(weights[7]*numHoleCols)/COLS;
+      heuristic -= (double)(weights[8]*concavity)/100;
+      heuristic += (double)(weights[9]*(float)rowsCleared)/4;
+      
+      // System.out.println((weights[8]*concavity)/100);
+      
+      return heuristic;  
     }
 
     public int getMaxHeight() {
@@ -470,6 +468,7 @@ public class PlayerSkeleton {
       for (int j = 6; j < COLS; j++) {
         concavity += top[5] - top[j];
       }
+            
       return concavity;
     }
 
@@ -480,11 +479,15 @@ public class PlayerSkeleton {
       int[] colHoles = new int[COLS];
       int holeMultiplier = 1; // holes on top of holes are really bad
       int holeDepth = 1; // total number of blocks above holes
-
-      for (int j = 0; j < field[0].length; j++) {
-        holeMultiplier = 1;
-        for (int i = top[j] - 2; i >= 0; i--) {
-          if (field[i][j] == 0) {
+      int totalHoleDepth = 0;
+      
+      for (int j = 0; j < field[0].length; j++){
+        holeMultiplier = 1; 
+        holeDepth = 1;
+        for (int i = top[j]-2; i >= 0; i--){
+          if (field[i][j] == 0){
+            totalHoleDepth += holeDepth;
+            holeDepth = 0;
             holes += holeMultiplier;
             holeMultiplier++;
             if (top[j] > maxHoleHeight) {
@@ -493,12 +496,14 @@ public class PlayerSkeleton {
             rowHoles[i] = 1;
             colHoles[j] = 1;
             continue;
+          } else {
+            holeDepth++;
           }
-          holeDepth++;
-        }
+            
+        } 
       }
-      // System.out.println(holes);
-      int[] result = { holes, maxHoleHeight, holeDepth, IntStream.of(rowHoles).sum(), IntStream.of(colHoles).sum() };
+
+      int[] result = {holes, maxHoleHeight, totalHoleDepth, IntStream.of(rowHoles).sum(), IntStream.of(colHoles).sum()};
       return result;
     }
 
@@ -507,6 +512,7 @@ public class PlayerSkeleton {
       for (int i = 0; i < top.length - 1; i++) {
         total += Math.abs(top[i] - top[i + 1]);
       }
+
       return total;
     }
   }
