@@ -220,7 +220,7 @@ public class Particle implements Comparable<Particle> {
 
     public void generateIndividual() {
         for (int i = 0; i < size(); i++) {
-            double gene = random.nextDouble() * 1000.0f;
+            double gene = random.nextDouble() * 10.0f;
             position[i] = gene;
         }
     }
