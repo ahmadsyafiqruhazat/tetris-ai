@@ -1,45 +1,64 @@
+import javafx.util.Pair;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class Population {
 
-    Chromosome[] chromosomes;
+    ArrayList<Particle> chromosomes;
 
     public Population(int populationSize, boolean initialise) {
-        chromosomes = new Chromosome[populationSize];
         // Initialise population
+        chromosomes = new ArrayList<>();
         if (initialise) {
             // Loop and create chromosomes
-            for (int i = 0; i < size(); i++) {
-                Chromosome newChromosome = new Chromosome();
+            for (int i = 0; i < populationSize; i++) {
+                Particle newChromosome = new Particle();
                 newChromosome.generateIndividual();
-                saveIndividual(i, newChromosome);
+                chromosomes.add(newChromosome);
             }
         }
     }
 
-    /* Getters */
-    public Chromosome getIndividual(int index) {
-        return chromosomes[index];
+    public void setChromosomes(ArrayList<Particle> chromosomes) {
+        this.chromosomes = chromosomes;
     }
 
-    public Chromosome getFittest() {
-        Chromosome fittest = chromosomes[0];
+    /* Getters */
+    public Particle getIndividual(int index) {
+        return chromosomes.get(index);
+    }
+
+    public Pair<Particle,Integer> getFittest() {
+        Particle fittest = chromosomes.get(0);
+        int pos=0;
         // Loop through chromosomes to find fittest
         for (int i = 0; i < size(); i++) {
             if (fittest.getFitness() <= getIndividual(i).getFitness()) {
                 fittest = getIndividual(i);
+                pos = i;
             }
         }
-        return fittest;
+        return new Pair<>(fittest,pos);
     }
 
     /* Public methods */
     // Get population size
     public int size() {
-        return chromosomes.length;
+        return chromosomes.size();
     }
 
     // Save individual
-    public void saveIndividual(int index, Chromosome indiv) {
-        chromosomes[index] = indiv;
+    public void saveIndividual(Particle indiv) {
+        chromosomes.add(indiv);
+    }
+
+    public void saveIndividual(Particle indiv,int index) {
+        chromosomes.add(index,indiv);
+    }
+
+    public ArrayList<Particle> getChromosomes() {
+        return chromosomes;
     }
 }
