@@ -120,6 +120,7 @@ public class Particle {
         for (int i = 0; i < Constants.defaultGeneLength; i++) {
             weights[i] = position[i];
         }
+
         for (int i = 0; i < Constants.NUM_RUNS; i++) {
             allPositions.add(weights);
         }
@@ -151,12 +152,12 @@ public class Particle {
         double[] second = Calc.scale(Calc.subtract(pBest, position), rand1 * COGNITIVE_WEIGHT);
         double[] third = Calc.scale(Calc.subtract(gBest, position), rand2 * SOCIAL_WEIGHT);
         velocity = Calc.add(Calc.add(first, second), third);
-        bounceVelocity();
+//        bounceVelocity();
     }
 
     private void updatePosition() {
         position = Calc.add(position, velocity);
-        bouncePosition();
+//        bouncePosition();
     }
 
     private void initializePosition() {
