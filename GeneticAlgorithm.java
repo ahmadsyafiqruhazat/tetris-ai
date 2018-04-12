@@ -1,8 +1,15 @@
 import javafx.util.Pair;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
+
+import com.sun.org.apache.bcel.internal.generic.POP;
 
 public class GeneticAlgorithm {
 
@@ -17,13 +24,12 @@ public class GeneticAlgorithm {
         // Loop over the population size and create new chromosomes with
         // crossover
 
+        Collection<ForkJoinTask<Void>> allTasks = new ArrayList<>();
         for (int i = 0 ; i <(int)(Constants.NUM_OFFSPRING * pop.size()); i++) {
-            Particle indiv1 = tournamentSelection(pop);
-            Particle indiv2 = tournamentSelection(pop);
-            Particle[] newIndiv = crossover(indiv1, indiv2);
-            newPopulation.saveIndividual(newIndiv[0]);
-            newPopulation.saveIndividual(newIndiv[1]);
+            ForkJoinTask task = new SelectionTask(pop, newPopulation);
+            allTasks.add(task);
         }
+        ForkJoinTask.invokeAll(allTasks);
 
         pop.sort();
 
@@ -40,6 +46,44 @@ public class GeneticAlgorithm {
         }
 
         return newPopulation;
+    }
+
+
+    static class SelectionTask extends ForkJoinTask<Void> {
+        public SelectionTask(Population oldPopulation, Population newPopulation) {
+            this.oldPopulation = oldPopulation;
+            this.newPopulation = newPopulation;
+        }
+
+        @Override
+        protected boolean exec() {
+            fillWithFittest(oldPopulation, newPopulation);
+            return true;
+        }
+
+        @Override
+        public Void getRawResult() {
+            return null;
+        }
+
+        @Override
+        protected void setRawResult(Void value) {
+        }
+
+        private Population oldPopulation;
+        private Population newPopulation;
+
+        private static final long serialVersionUID = 1L;
+    }
+
+    static Void fillWithFittest(Population oldPopulation, Population newPopulation) {
+        System.out.println("entered fillWithFittest");
+        Particle indiv1 = tournamentSelection(oldPopulation);
+        Particle indiv2 = tournamentSelection(oldPopulation);
+        Particle[] newIndiv = crossover(indiv1, indiv2);
+        newPopulation.saveIndividual(newIndiv[0]);
+        newPopulation.saveIndividual(newIndiv[1]);
+        return null;
     }
 
     private static final PlayerSkeleton.Evaluator<Double[], Float> EVOLVE_FUNC = new PlayerSkeleton.Evaluator<Double[],
@@ -119,18 +163,18 @@ public class GeneticAlgorithm {
 
    //     while (true) {
 //            System.out.println("getFitness: " +myPop.getFittest().getFitness());
-            if(maxFitness > myPop.getFittest().getKey().getFitness()){
-                lostGeneration++;
-
-            } else {
-                maxFitness = myPop.getFittest().getKey().getFitness();
-                lostGeneration = 0;
-            }
+//            if(maxFitness > myPop.getFittest().getKey().getFitness()){
+//                lostGeneration++;
+//
+//            } else {
+//                maxFitness = myPop.getFittest().getKey().getFitness();
+//                lostGeneration = 0;
+//            }
 //            if(lostGeneration> Constants.MAX_LOST_GENERATION){
 //                break;
 //            }
-            generationCount++;
-            System.out.println("Generation: " + i + " Fittest: " + myPop.getFittest().getKey().getFitness() + " Max " + maxFitness);
+//            generationCount++;
+//            System.out.println("Generation: " + i + " Fittest: " + myPop.getFittest().getKey().getFitness() + " Max " + maxFitness);
             myPop = evolvePopulation(myPop);
 //            System.out.println("Lost " + lostGeneration + " Max: "+  maxFitness);
 //        }
