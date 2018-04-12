@@ -61,4 +61,8 @@ public class Population {
     public ArrayList<Particle> getChromosomes() {
         return chromosomes;
     }
+
+    public void sort(){
+        Collections.sort(chromosomes, Collections.reverseOrder());
+    }
 }
