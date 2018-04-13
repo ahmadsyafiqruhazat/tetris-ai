@@ -33,10 +33,8 @@ public class GeneticAlgorithm {
 
         pop.sort();
 
-        for(int i = 0; i <pop.size()-(int)(Constants.NUM_OFFSPRING * pop.size()); i++){
-            if (i < 3) {
-                System.out.println("particle " + i + "'s fitness: " + pop.getIndividual(i).getFitness());
-            }
+        for(int i = 0; i < pop.size() - (int)(Constants.NUM_OFFSPRING * pop.size() * 2); i++){
+            System.out.println("particle " + i + "'s fitness: " + pop.getIndividual(i).getFitness());
             newPopulation.saveIndividual(pop.getIndividual(i));
         }
 
