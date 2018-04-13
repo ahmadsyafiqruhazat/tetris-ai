@@ -1,3 +1,7 @@
+import javafx.util.Pair;
+
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Random;
 
 public class GeneticAlgorithm {
@@ -7,101 +11,110 @@ public class GeneticAlgorithm {
 
     // Evolve a population
     public static Population evolvePopulation(Population pop) {
-        Population newPopulation = new Population(pop.size(), false);
 
-        // Keep our best individual
-        if (Constants.elitism) {
-            newPopulation.saveIndividual(0, pop.getFittest());
-        }
-
-        // Crossover population
-        int elitismOffset;
-        if (Constants.elitism) {
-            elitismOffset = 1;
-        } else {
-            elitismOffset = 0;
-        }
         // Loop over the population size and create new chromosomes with
         // crossover
-        for (int i = elitismOffset; i < pop.size(); i++) {
-            Chromosome indiv1 = tournamentSelection(pop);
-            Chromosome indiv2 = tournamentSelection(pop);
-            Chromosome newIndiv = crossover(indiv1, indiv2);
-            newPopulation.saveIndividual(i, newIndiv);
+
+        for (int i = 0; i <(int)(Constants.NUM_OFFSPRING*Constants.POPULATION_SIZE); i++) {
+            Pair<Particle,Integer> indiv1 = tournamentSelection(pop);
+            Pair<Particle,Integer> indiv2 = tournamentSelection(pop);
+            Particle[] newIndiv = crossover(indiv1.getKey(), indiv2.getKey());
+            pop.saveIndividual(newIndiv[0],indiv1.getValue());
+            pop.saveIndividual(newIndiv[1],indiv2.getValue());
+
         }
 
         // Mutate population
-        for (int i = elitismOffset; i < newPopulation.size(); i++) {
-            mutate(newPopulation.getIndividual(i));
+        for (int i = 0; i < pop.size(); i++) {
+            mutate(pop.getIndividual(i));
         }
 
-        return newPopulation;
+        return pop;
     }
 
     // Crossover chromosomes
-    private static Chromosome crossover(Chromosome indiv1, Chromosome indiv2) {
-        Chromosome newSol = new Chromosome();
-        // Loop through genes
-        for (int i = 0; i < indiv1.size(); i++) {
-            // Crossover
-            if (Math.random() <= Constants.uniformRate) {
-                newSol.setGene(i, indiv1.getGene(i));
-            } else {
-                newSol.setGene(i, indiv2.getGene(i));
-            }
+
+    private static Particle[] crossover(Particle indiv1, Particle indiv2) {
+        Particle newSol1 = new Particle();
+        Particle newSol2 = new Particle();
+
+        double[] newGene1 = newSol1.getGenes();
+        double[] newGene2 = newSol2.getGenes();
+        int length = indiv1.size();
+
+        Random random = new Random();
+        if (Math.random() <= Constants.crossoverRate) {
+            int crossoverPoint = random.nextInt(length);
+            System.arraycopy(indiv1.getGenes(), 0, newGene1, 0, crossoverPoint);
+            System.arraycopy(indiv2.getGenes(), 0, newGene2, 0, crossoverPoint);
+            System.arraycopy(indiv1.getGenes(), crossoverPoint, newGene1, crossoverPoint, length-crossoverPoint);
+            System.arraycopy(indiv1.getGenes(), crossoverPoint, newGene1, crossoverPoint, length-crossoverPoint);
+
+        } else {
+            return new Particle[] { indiv1,indiv2};
         }
-        return newSol;
+
+        return new Particle[] { newSol1,newSol2};
     }
 
     // Mutate an individual
-    private static void mutate(Chromosome indiv) {
+    private static void mutate(Particle indiv) {
         // Loop through genes
         for (int i = 0; i < indiv.size(); i++) {
             if (Math.random() <= Constants.mutationRate) {
                 // Create random gene
                 Random random = new Random();
-                float gene = random.nextFloat() * 1000.0f;
-                indiv.setGene(i, gene);
+                double gene = random.nextDouble() * 0.4 - 0.2;
+                indiv.mutateGene(i, gene);
             }
         }
     }
 
     // Select chromosomes for crossover
-    private static Chromosome tournamentSelection(Population pop) {
+    private static Pair<Particle,Integer> tournamentSelection(Population pop) {
         // Create a tournament population
-        Population tournament = new Population(Constants.tournamentSize, false);
+        Population tournament = new Population((int)(Constants.tournamentSize * Constants.POPULATION_SIZE), false);
         // For each place in the tournament get a random individual
-        for (int i = 0; i < Constants.tournamentSize; i++) {
+        HashMap<Integer,Integer> pos = new HashMap<>();
+        for (int i = 0; i < (int)(Constants.tournamentSize * Constants.POPULATION_SIZE); i++) {
             int randomId = (int) (Math.random() * pop.size());
-            tournament.saveIndividual(i, pop.getIndividual(randomId));
+            tournament.saveIndividual(pop.getIndividual(randomId));
+            pos.put(i,randomId);
         }
         // Get the fittest
-        Chromosome fittest = tournament.getFittest();
-        return fittest;
+        Pair<Particle,Integer>fittest = tournament.getFittest();
+        return new Pair<Particle,Integer>(fittest.getKey(), pos.get(fittest.getValue()));
     }
 
-    public static void main(String[] args) {
-
-        Population myPop = new Population(50, true);
+    public Population run( Population myPop, int i) {
 
         int generationCount = 0;
         int lostGeneration = 0;
         int maxFitness = 0;
 
-        while (true) {
-            if(maxFitness > myPop.getFittest().getFitness()){
+
+   //     while (true) {
+//            System.out.println("getFitness: " +myPop.getFittest().getFitness());
+            if(maxFitness > myPop.getFittest().getKey().getFitness()){
                 lostGeneration++;
+
+            } else {
+                maxFitness = myPop.getFittest().getKey().getFitness();
+                lostGeneration = 0;
             }
-            if(lostGeneration> Constants.MAX_LOST_GENERATION){
-                break;
-            }
+//            if(lostGeneration> Constants.MAX_LOST_GENERATION){
+//                break;
+//            }
             generationCount++;
-            System.out.println("Generation: " + generationCount + " Fittest: " + myPop.getFittest().getFitness());
+            System.out.println("Generation: " + i + " Fittest: " + myPop.getFittest().getKey().getFitness() + " Max " + maxFitness);
             myPop = evolvePopulation(myPop);
-        }
+//            System.out.println("Lost " + lostGeneration + " Max: "+  maxFitness);
+//        }
         System.out.println("Generation: " + generationCount);
         System.out.println("Genes:");
-        System.out.println(myPop.getFittest());
+        System.out.println(Arrays.toString(myPop.getFittest().getKey().getGenes()));
+        System.out.println("///////////////////");
+        return myPop;
 
     }
 }
