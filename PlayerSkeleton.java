@@ -1096,7 +1096,14 @@ public class PlayerSkeleton {
     @Override
     public int compareTo(Possibility pos) {
       // System.out.println("Comparing " + this.score + " to " + pos.score);
-      return (int) (this.score - pos.score);
+      if (this.score > pos.score) {
+        return 1;
+      } else if (this.score < pos.score) {
+        return -1;  
+      } else {
+        return 0;  
+      }
+      // return (int) (this.score - pos.score);
     }
   }
 
