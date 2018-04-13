@@ -436,17 +436,31 @@ public class PlayerSkeleton {
       int numHoleCols = holesArray[4];
       int concavity = getConcavity();
       
-      heuristic -= (double)(weights[0]*maxHeight)/ROWS;  
-      heuristic -= (double)(weights[1]*totalHeight)/(ROWS*COLS);
-      heuristic -= (double)(weights[2]*bumpiness)/80;
-      heuristic -= (double)(weights[3]*numHoles)/400;
-      heuristic -= (double)(weights[4]*maxHoleHeight)/ROWS;
-      heuristic -= (double)(weights[5]*holeDepth)/200;
-      heuristic -= (double)(weights[6]*numHoleRows)/ROWS;
-      heuristic -= (double)(weights[7]*numHoleCols)/COLS;
-      heuristic -= (double)(weights[8]*concavity)/100;
-      heuristic += (double)(weights[9]*(float)rowsCleared)/4;
-      
+      heuristic -= (double)(weights[0]*maxHeight);
+      heuristic -= (double)(weights[1]*totalHeight);
+      heuristic -= (double)(weights[2]*bumpiness);
+      heuristic -= (double)(weights[3]*numHoles);
+      heuristic -= (double)(weights[4]*maxHoleHeight);
+      heuristic -= (double)(weights[5]*holeDepth);
+      heuristic -= (double)(weights[6]*numHoleRows);
+      heuristic -= (double)(weights[7]*numHoleCols);
+      heuristic -= (double)(weights[8]*concavity);
+      heuristic += (double)(weights[9]*(float)rowsCleared);
+
+//        heuristic -= (double)(weights[0]*maxHeight)/ROWS;
+//        heuristic -= (double)(weights[1]*totalHeight)/(ROWS*COLS);
+//        heuristic -= (double)(weights[2]*bumpiness)/80;
+//        heuristic -= (double)(weights[3]*numHoles)/400;
+//        heuristic -= (double)(weights[4]*maxHoleHeight)/ROWS;
+//        heuristic -= (double)(weights[5]*holeDepth)/200;
+//        heuristic -= (double)(weights[6]*numHoleRows)/ROWS;
+//        heuristic -= (double)(weights[7]*numHoleCols)/COLS;
+//        heuristic -= (double)(weights[8]*concavity)/100;
+//        heuristic += (double)(weights[9]*(float)rowsCleared)/4;
+
+
+
+
       // System.out.println((weights[8]*concavity)/100);
       
       return heuristic;  
