@@ -65,4 +65,8 @@ public class Population {
     public void sort(){
         Collections.sort(chromosomes, Collections.reverseOrder());
     }
+
+    public void reset(){
+        for(Particle p : chromosomes) p.reset();
+    }
 }

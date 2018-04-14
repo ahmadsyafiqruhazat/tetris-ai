@@ -15,6 +15,7 @@ public class HPSOGA {
             myPop.setChromosomes(pso.run());
             System.out.println("Running GA");
             myPop = ga.run(myPop, i);
+            myPop.reset();
         }
     }
     public static void main(String[] args){
