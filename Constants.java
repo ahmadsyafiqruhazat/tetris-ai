@@ -11,12 +11,13 @@ public class Constants {
     public static double maxInitialWeight = 2.0;
 
     // Number of runs averaged to get the fitness
-    static int NUM_RUNS = 5;
+    static int NUM_RUNS = 20;
     public static int MAX_ITERATIONS = 100;
-    public static int PSO_ITERATIONS = 10;
+    public static int PSO_ITERATIONS = 5;
     public static int MAX_MOVES = 5000;
     public static double[] defaultWeights = {-10.072815856557765, 29.233212822489993, 35.42440205833141, 155.38905355659324, 14.717078617276146, 0.0, 0.0, 0.0,
             0.0, 0.0};
 
     public static double MAX_HEURISTICS = Double.MAX_VALUE;
+    public static double MAX_INIT_WEIGHT = 2.0;
 }
