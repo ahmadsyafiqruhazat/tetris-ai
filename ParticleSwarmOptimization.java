@@ -35,11 +35,7 @@ public class ParticleSwarmOptimization {
 //            System.out.print(pBest[i] + ", ");
 //        }
 
-        System.out.println();
-
-        System.out.println("Particle "  + n + " Local Best Fitness: ");
-
-        System.out.println(pBestFitness);
+        System.out.println("Particle "  + n + " Local Best Fitness: " + pBestFitness);
     }
 
     public void printSwarmData() {
@@ -47,10 +43,9 @@ public class ParticleSwarmOptimization {
         System.out.println("------ Current num of particles: " + particles.size());
         for (int i = 0; i < particles.size(); i++) {
             printParticleData(i);
-            System.out.println("-----------");
         }
 
-        System.out.println("Global Best Position: ");
+        System.out.print("Global Best Position: ");
 
         for (int i = 0; i < Particle.gBest.length; i++) {
             System.out.print(Particle.gBest[i] + ", ");
