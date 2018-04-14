@@ -286,5 +286,11 @@ public class Particle implements Comparable<Particle> {
         return this.getFitness() - particle.getFitness();
     }
 
+    public void reset(){
+        initializeFitness();
+        initializePBest();
+        initializeVelocity();
+    }
+
 }
 

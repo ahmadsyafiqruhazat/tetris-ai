@@ -78,9 +78,8 @@ public class GeneticAlgorithm {
         System.out.println("entered fillWithFittest");
         Particle indiv1 = tournamentSelection(oldPopulation);
         Particle indiv2 = tournamentSelection(oldPopulation);
-        Particle[] newIndiv = crossover(indiv1, indiv2);
-        newPopulation.saveIndividual(newIndiv[0]);
-        newPopulation.saveIndividual(newIndiv[1]);
+        Particle newIndiv = crossover(indiv1, indiv2);
+        newPopulation.saveIndividual(newIndiv);
         return null;
     }
 
@@ -100,27 +99,25 @@ public class GeneticAlgorithm {
 
     // Crossover chromosomes
 
-    private static Particle[] crossover(Particle indiv1, Particle indiv2) {
-        Particle newSol1 = new Particle();
-        Particle newSol2 = new Particle();
+    private static Particle crossover(Particle indiv1, Particle indiv2) {
+        Particle newSol = new Particle();
 
-        double[] newGene1 = newSol1.getGenes();
-        double[] newGene2 = newSol2.getGenes();
+        double[] newGene1 = newSol.getGenes();
         int length = indiv1.size();
 
-        Random random = new Random();
-        if (Math.random() <= Constants.crossoverRate) {
-            int crossoverPoint = random.nextInt(length);
-            System.arraycopy(indiv1.getGenes(), 0, newGene1, 0, crossoverPoint);
-            System.arraycopy(indiv2.getGenes(), 0, newGene2, 0, crossoverPoint);
-            System.arraycopy(indiv1.getGenes(), crossoverPoint, newGene1, crossoverPoint, length-crossoverPoint);
-            System.arraycopy(indiv1.getGenes(), crossoverPoint, newGene1, crossoverPoint, length-crossoverPoint);
+        double[] gene1 = indiv1.getGenes();
+        double[] gene2 = indiv2.getGenes();
 
-        } else {
-            return new Particle[] { indiv1,indiv2};
+        int totalFitness = indiv1.getFitness() + indiv2.getFitness();
+        double c1 = indiv1.getFitness()/totalFitness;
+        double c2 = indiv2.getFitness()/totalFitness;
+
+        Random random = new Random();
+        for(int i=0;i<Constants.defaultGeneLength; i++){
+            newGene1[i] = c1*gene1[i] +c2*gene2[i];
         }
 
-        return new Particle[] { newSol1,newSol2};
+        return newSol;
     }
 
     // Mutate an individual
