@@ -45,6 +45,25 @@ public class PlayerSkeleton {
   private CopyOnWriteArrayList<Move> possibleMoves = new CopyOnWriteArrayList<>();
   //  private ArrayList<Move> possibleMoves = new ArrayList<>();
 
+
+  public PlayerSkeleton(ForkJoinPool forkJoinPool) {
+    this.forkJoinExecutor = forkJoinPool;
+    this.concurrentExecutor = new ConcurrentExecutor(forkJoinPool);
+    double[] newWeights = Constants.defaultWeights;
+    double[] newNextWeights = Constants.defaultWeights;
+    this.weights = newWeights;
+    this.nextWeights = newNextWeights;
+    this.evaluator = new WeightedSumEvaluator(EVALUATORS, weights, nextWeights);
+
+    initializeLegalMoves();
+  }
+
+  public PlayerSkeleton(ForkJoinPool forkJoinPool, double[] weights, double[] nextWeights) {
+    this.concurrentExecutor = new ConcurrentExecutor(forkJoinPool);
+    this.evaluator = new WeightedSumEvaluator(EVALUATORS, weights, nextWeights);
+    initializeLegalMoves();
+  }
+
   //implement this function to have a working system
   public int pickMove(State s, int[][] legalMoves) {
     int bestMove = 0;
@@ -215,41 +234,8 @@ public class PlayerSkeleton {
     System.out.println("You have completed " + s.getRowsCleared() + " rows.");
   }
 
-  public PlayerSkeleton(ForkJoinPool forkJoinPool) {
-    this.forkJoinExecutor = forkJoinPool;
-    this.concurrentExecutor = new ConcurrentExecutor(forkJoinPool);
-    double[] newWeights = Constants.defaultWeights;
-    double[] newNextWeights = Constants.defaultWeights;
-    this.weights = newWeights;
-    this.nextWeights = newNextWeights;
-    this.evaluator = new WeightedSumEvaluator(EVALUATORS, weights, nextWeights);
 
-    // generate legal moves - done globally for use in ldfs
-    for(int i = 0; i < N_PIECES; i++) {
-      //figure number of legal moves
-      int n = 0;
-      for(int j = 0; j < pOrients[i]; j++) {
-        //number of locations in this orientation
-        n += COLS+1-pWidth[i][j];
-      }
-      //allocate space
-      legalMoves[i] = new int[n][2];
-      //for each orientation
-      n = 0;
-      for(int j = 0; j < pOrients[i]; j++) {
-        //for each slot
-        for(int k = 0; k < COLS+1-pWidth[i][j];k++) {
-          legalMoves[i][n][ORIENT] = j;
-          legalMoves[i][n][SLOT] = k;
-          n++;
-        }
-      }
-    }
-  }
-
-  public PlayerSkeleton(ForkJoinPool forkJoinPool, double[] weights, double[] nextWeights) {
-    this.concurrentExecutor = new ConcurrentExecutor(forkJoinPool);
-    this.evaluator = new WeightedSumEvaluator(EVALUATORS, weights, nextWeights);
+  static void initializeLegalMoves() {
 
     // generate legal moves - done globally for use in ldfs
     for(int i = 0; i < N_PIECES; i++) {

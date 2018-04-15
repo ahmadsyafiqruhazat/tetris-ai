@@ -82,6 +82,7 @@ public class Particle implements Comparable<Particle> {
             for (int i = 0; i < Constants.defaultGeneLength; i++) {
                 weights[i] = genes[i];
             }
+            PlayerSkeleton.initializeLegalMoves();
             int fitness = PlayerSkeleton.run(weights);
             return (float) fitness;
         }
