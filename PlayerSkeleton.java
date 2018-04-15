@@ -95,6 +95,7 @@ public class PlayerSkeleton {
     // o(n*)
     for (int n = 0; n < N_PIECES; n++) {
       // new array of possibilities for piece n
+      System.out.println("Considering legal move: " + legalMoves[n]);
       possibilities = new Possibility[legalMoves[n].length];
       maxHeuristic = -Constants.MAX_HEURISTICS;
       for (int i = 0; i < legalMoves[n].length; i++) {
@@ -564,8 +565,6 @@ public class PlayerSkeleton {
         }
       }
     }
-
-    new TFrame(s);
 
     ForkJoinPool concurrentExecutor = new ForkJoinPool();
     PlayerSkeleton p = new PlayerSkeleton(concurrentExecutor);
