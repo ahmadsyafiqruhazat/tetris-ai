@@ -123,8 +123,6 @@ public class Particle {
             allPositions.add(weights);
         }
 
-        System.out.println("Number of runs: " + allPositions.size());
-
         result = concurrentExecutor.execute(FITNESS_FUNC, AVG_SCORE, allPositions);
         fitness = (int) result;
     }
