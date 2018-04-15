@@ -197,27 +197,6 @@ public class PlayerSkeleton {
     pHeight = State.getpHeight();
     pTop = State.getpTop();
 
-    // generate legal moves - done globally for use in ldfs
-    for(int i = 0; i < N_PIECES; i++) {
-      //figure number of legal moves
-      int n = 0;
-      for(int j = 0; j < pOrients[i]; j++) {
-        //number of locations in this orientation
-        n += COLS+1-pWidth[i][j];
-      }
-      //allocate space
-      legalMoves[i] = new int[n][2];
-      //for each orientation
-      n = 0;
-      for(int j = 0; j < pOrients[i]; j++) {
-        //for each slot
-        for(int k = 0; k < COLS+1-pWidth[i][j];k++) {
-          legalMoves[i][n][ORIENT] = j;
-          legalMoves[i][n][SLOT] = k;
-          n++;
-        }
-      }
-    }
     new TFrame(s);
 
     ForkJoinPool forkJoinPool = new ForkJoinPool();
@@ -244,11 +223,55 @@ public class PlayerSkeleton {
     this.weights = newWeights;
     this.nextWeights = newNextWeights;
     this.evaluator = new WeightedSumEvaluator(EVALUATORS, weights, nextWeights);
+
+    // generate legal moves - done globally for use in ldfs
+    for(int i = 0; i < N_PIECES; i++) {
+      //figure number of legal moves
+      int n = 0;
+      for(int j = 0; j < pOrients[i]; j++) {
+        //number of locations in this orientation
+        n += COLS+1-pWidth[i][j];
+      }
+      //allocate space
+      legalMoves[i] = new int[n][2];
+      //for each orientation
+      n = 0;
+      for(int j = 0; j < pOrients[i]; j++) {
+        //for each slot
+        for(int k = 0; k < COLS+1-pWidth[i][j];k++) {
+          legalMoves[i][n][ORIENT] = j;
+          legalMoves[i][n][SLOT] = k;
+          n++;
+        }
+      }
+    }
   }
 
   public PlayerSkeleton(ForkJoinPool forkJoinPool, double[] weights, double[] nextWeights) {
     this.concurrentExecutor = new ConcurrentExecutor(forkJoinPool);
     this.evaluator = new WeightedSumEvaluator(EVALUATORS, weights, nextWeights);
+
+    // generate legal moves - done globally for use in ldfs
+    for(int i = 0; i < N_PIECES; i++) {
+      //figure number of legal moves
+      int n = 0;
+      for(int j = 0; j < pOrients[i]; j++) {
+        //number of locations in this orientation
+        n += COLS+1-pWidth[i][j];
+      }
+      //allocate space
+      legalMoves[i] = new int[n][2];
+      //for each orientation
+      n = 0;
+      for(int j = 0; j < pOrients[i]; j++) {
+        //for each slot
+        for(int k = 0; k < COLS+1-pWidth[i][j];k++) {
+          legalMoves[i][n][ORIENT] = j;
+          legalMoves[i][n][SLOT] = k;
+          n++;
+        }
+      }
+    }
   }
 
   /**
@@ -544,27 +567,7 @@ public class PlayerSkeleton {
     pHeight = State.getpHeight();
     pTop = State.getpTop();
 
-    // generate legal moves - done globally for use in ldfs
-    for(int i = 0; i < N_PIECES; i++) {
-      //figure number of legal moves
-      int n = 0;
-      for(int j = 0; j < pOrients[i]; j++) {
-        //number of locations in this orientation
-        n += COLS+1-pWidth[i][j];
-      }
-      //allocate space
-      legalMoves[i] = new int[n][2];
-      //for each orientation
-      n = 0;
-      for(int j = 0; j < pOrients[i]; j++) {
-        //for each slot
-        for(int k = 0; k < COLS+1-pWidth[i][j];k++) {
-          legalMoves[i][n][ORIENT] = j;
-          legalMoves[i][n][SLOT] = k;
-          n++;
-        }
-      }
-    }
+
 
     ForkJoinPool concurrentExecutor = new ForkJoinPool();
     PlayerSkeleton p = new PlayerSkeleton(concurrentExecutor);
