@@ -55,13 +55,12 @@ public class PlayerSkeleton {
     this.nextWeights = newNextWeights;
     this.evaluator = new WeightedSumEvaluator(EVALUATORS, weights, nextWeights);
 
-    initializeLegalMoves();
   }
 
   public PlayerSkeleton(ForkJoinPool forkJoinPool, double[] weights, double[] nextWeights) {
     this.concurrentExecutor = new ConcurrentExecutor(forkJoinPool);
     this.evaluator = new WeightedSumEvaluator(EVALUATORS, weights, nextWeights);
-    initializeLegalMoves();
+
   }
 
   //implement this function to have a working system
@@ -215,6 +214,8 @@ public class PlayerSkeleton {
     pBottom = State.getpBottom();
     pHeight = State.getpHeight();
     pTop = State.getpTop();
+
+    initializeLegalMoves();
 
     new TFrame(s);
 
@@ -553,7 +554,7 @@ public class PlayerSkeleton {
     pHeight = State.getpHeight();
     pTop = State.getpTop();
 
-
+    initializeLegalMoves();
 
     ForkJoinPool concurrentExecutor = new ForkJoinPool();
     PlayerSkeleton p = new PlayerSkeleton(concurrentExecutor);
