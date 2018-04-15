@@ -81,6 +81,7 @@ public class PlayerSkeleton {
     return bestMove;
   }
 
+
   public double ldfsGetNextHeuristic(WorkingState ws, double[] weights, int depthLimit) {
     double[] nextHeuristic = new double[N_PIECES];
     Possibility[] possibilities;
@@ -222,13 +223,13 @@ public class PlayerSkeleton {
     PlayerSkeleton p = new PlayerSkeleton(forkJoinPool);
     while (!s.hasLost()) {
       s.makeMove(p.pickMove(s, s.legalMoves()));
-//      s.draw();
-//      s.drawNext(0, 0);
-//      try {
-//        Thread.sleep(0);f
-//      } catch (InterruptedException e) {
-//        e.printStackTrace();
-//      }
+      s.draw();
+      s.drawNext(0, 0);
+      try {
+        Thread.sleep(0);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
 
     }
     System.out.println("You have completed " + s.getRowsCleared() + " rows.");
@@ -563,6 +564,8 @@ public class PlayerSkeleton {
         }
       }
     }
+
+    new TFrame(s);
 
     ForkJoinPool concurrentExecutor = new ForkJoinPool();
     PlayerSkeleton p = new PlayerSkeleton(concurrentExecutor);
