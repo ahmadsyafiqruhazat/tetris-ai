@@ -559,9 +559,19 @@ public class PlayerSkeleton {
     PlayerSkeleton p = new PlayerSkeleton(concurrentExecutor);
     p.setWeights(weights);
     int moves = 0;
-    while (!s.hasLost() && moves <= Constants.MAX_MOVES) {
-      s.makeMove(p.pickMove(s, s.legalMoves()));
-      moves++;
+    try {
+        while (!s.hasLost() && moves <= Constants.MAX_MOVES) {
+            s.makeMove(p.pickMove(s, s.legalMoves()));
+            moves++;
+        }
+    } catch (ArrayIndexOutOfBoundsException e) {
+        e.printStackTrace();
+        System.out.print("Fail. Weights: " );
+        for (int i = 0; i < weights.length; i++) {
+            System.out.print(weights[i] + ", ");
+        }
+        System.out.println();
+        return 0;
     }
     return s.getRowsCleared();
   }
