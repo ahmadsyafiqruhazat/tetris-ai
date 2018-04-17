@@ -31,6 +31,10 @@ public class GeneticAlgorithm {
         }
         ForkJoinTask.invokeAll(allTasks);
 
+        for (ForkJoinTask<Void> task: allTasks) {
+            task.join();
+        }
+
         pop.sort();
 
         for(int i = 0; i < pop.size() - (int)(Constants.NUM_OFFSPRING * pop.size()); i++){
