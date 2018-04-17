@@ -28,12 +28,6 @@ public class PlayerSkeleton {
 
   private double[] weights = Constants.defaultWeights;
   private double[] nextWeights = Constants.defaultWeights;
-  //        double[] weights = {7.777049566227959, 6.249963955307919, 15.025267484201208, 18.083431916001572,
-  //                12.608808031021113, 19.656750655339692, 8.005170457533438, -4.787722424760801, -8.089689910134979,
-  //                2.28525592482589  };
-  //        double[] nextWeights = {7.777049566227959, 6.249963955307919, 15.025267484201208, 18.083431916001572,
-  //                12.608808031021113, 19.656750655339692, 8.005170457533438, -4.787722424760801, -8.089689910134979,
-  //                2.28525592482589  };
   private static double PRUNE_RATE_INITIAL = 0.7;
   private static double PRUNE_RATE_FINAL = 0.8;
   private static int[][][] legalMoves = new int[N_PIECES][][];
