@@ -1,3 +1,8 @@
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.lang.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -553,9 +558,29 @@ public class PlayerSkeleton {
     PlayerSkeleton p = new PlayerSkeleton(concurrentExecutor);
     p.setWeights(weights);
     int moves = 0;
-    while (!s.hasLost() && moves <= Constants.MAX_MOVES) {
-      s.makeMove(p.pickMove(s, s.legalMoves()));
-      moves++;
+
+    int pickedMove=0;
+
+    try {
+        while (!s.hasLost() && moves <= Constants.MAX_MOVES) {
+          pickedMove = p.pickMove(s, s.legalMoves());
+            s.makeMove(pickedMove);
+            moves++;
+        }
+    } catch (ArrayIndexOutOfBoundsException e) {
+        e.printStackTrace();
+        System.out.print("Fail. Weights: " );
+        for (int i = 0; i < weights.length; i++) {
+            System.out.print(weights[i] + ", ");
+        }
+        System.out.println();
+        System.out.println("Picked Move: " + pickedMove);
+      try {
+        serializeDataOut(s);
+      } catch (IOException e1) {
+        e1.printStackTrace();
+      }
+      return 0;
     }
     return s.getRowsCleared();
   }
@@ -1124,6 +1149,24 @@ public class PlayerSkeleton {
       }
       // return (int) (this.score - pos.score);
     }
+  }
+
+  //save state for debug
+  public static void serializeDataOut(State ish)throws IOException {
+    String fileName= "state.txt";
+    FileOutputStream fos = new FileOutputStream(fileName);
+    ObjectOutputStream oos = new ObjectOutputStream(fos);
+    oos.writeObject(ish);
+    oos.close();
+  }
+
+  public static State serializeDataIn() throws IOException, ClassNotFoundException{
+    String fileName= "Test.txt";
+    FileInputStream fin = new FileInputStream(fileName);
+    ObjectInputStream ois = new ObjectInputStream(fin);
+    State state= (State) ois.readObject();
+    ois.close();
+    return state;
   }
 
 }

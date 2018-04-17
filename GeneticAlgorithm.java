@@ -101,7 +101,7 @@ public class GeneticAlgorithm {
 
     private static Particle crossover(Particle indiv1, Particle indiv2) {
         Particle newSol = new Particle();
-
+        double c1,c2;
         double[] newGene1 = newSol.getGenes();
         int length = indiv1.size();
 
@@ -109,8 +109,14 @@ public class GeneticAlgorithm {
         double[] gene2 = indiv2.getGenes();
 
         int totalFitness = indiv1.getFitness() + indiv2.getFitness();
-        double c1 = indiv1.getFitness()/totalFitness;
-        double c2 = indiv2.getFitness()/totalFitness;
+        
+        if (totalFitness==0) {
+            c1 = 0.5;
+            c2 = 0.5;
+        } else {
+            c1 = indiv1.getFitness() / totalFitness;
+            c2 = indiv2.getFitness() / totalFitness;
+        }
 
         Random random = new Random();
         for(int i=0;i<Constants.defaultGeneLength; i++){
