@@ -49,7 +49,7 @@ public class GeneticAlgorithm {
 
         System.out.println("EVOLVED POPULATION:");
         for(Particle p : newPopulation.getChromosomes()){
-            System.out.println(p.getGenes());
+            System.out.println(Arrays.toString(p.getGenes()));
         }
 
         return newPopulation;
