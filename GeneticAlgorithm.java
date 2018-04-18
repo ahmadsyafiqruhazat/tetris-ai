@@ -184,13 +184,16 @@ public class GeneticAlgorithm {
 //                break;
 //            }
             generationCount++;
-            System.out.println("Generation: " + i + " Fittest: " + myPop.getFittest().getKey().getFitness() + " Max " + maxFitness);
+//            System.out.println("Generation: " + i + " Fittest: " + myPop.getFittest().getKey().getFitness() + " Max " + maxFitness);
             myPop = evolvePopulation(myPop);
 //            System.out.println("Lost " + lostGeneration + " Max: "+  maxFitness);
 //        }
-        System.out.println("Generation: " + generationCount);
-        System.out.println("Genes:");
-        System.out.println(Arrays.toString(myPop.getFittest().getKey().getGenes()));
+//        System.out.println("Generation: " + generationCount);
+        System.out.print("FITTEST: FITNESS:");
+        Pair<Particle,Integer>  fittest = myPop.getFittest();
+        System.out.print(fittest.getKey().getFitness());
+        System.out.print("FITTEST GENES:");
+        System.out.println(Arrays.toString(fittest.getKey().getGenes()));
         System.out.println("///////////////////");
         return myPop;
 
