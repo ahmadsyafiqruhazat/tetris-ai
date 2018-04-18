@@ -47,6 +47,11 @@ public class GeneticAlgorithm {
             mutate(newPopulation.getIndividual(i));
         }
 
+        System.out.println("EVOLVED POPULATION:");
+        for(Particle p : newPopulation.getChromosomes()){
+            System.out.println(p.getGenes());
+        }
+
         return newPopulation;
     }
 
