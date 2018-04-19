@@ -82,6 +82,7 @@ public class GeneticAlgorithm {
         Particle indiv1 = tournamentSelection(oldPopulation);
         Particle indiv2 = tournamentSelection(oldPopulation);
         Particle newIndiv = crossover(indiv1, indiv2);
+        System.out.println("crossover's fitness: " + newIndiv.getFitness());
 //        System.out.println("crossover: " + Arrays.toString(newIndiv.getGenes()));
         newPopulation.saveIndividual(newIndiv);
         System.out.println("finished fillWithFittest");
