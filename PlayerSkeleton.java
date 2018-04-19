@@ -68,7 +68,7 @@ public class PlayerSkeleton {
     double maxHeuristic = -Constants.MAX_HEURISTICS;
     int nextPiece = s.getNextPiece();
     WorkingState ws = new WorkingState(s);
-    
+
     Heuristics h = new Heuristics(weights);
 
     Possibility[] possibilities = new Possibility[legalMoves.length];
@@ -214,15 +214,16 @@ public class PlayerSkeleton {
     pTop = State.getpTop();
 
     initializeLegalMoves();
-
+    int numMoves = 0;
     new TFrame(s);
 
     ForkJoinPool forkJoinPool = new ForkJoinPool();
     PlayerSkeleton p = new PlayerSkeleton(forkJoinPool);
-    while (!s.hasLost()) {
+    while (!s.hasLost() && numMoves<=5000) {
       s.makeMove(p.pickMove(s, s.legalMoves()));
       s.draw();
       s.drawNext(0, 0);
+      numMoves++;
       try {
         Thread.sleep(0);
       } catch (InterruptedException e) {
@@ -432,8 +433,8 @@ public class PlayerSkeleton {
 
       // score: the higher the better, but
       // it can be both positive and negative
-      double heuristic = 0; 
-      
+      double heuristic = 0;
+
       int maxHeight = getMaxHeight();
       int totalHeight = getTotalHeight();
       int bumpiness = getBumpiness();
@@ -444,7 +445,7 @@ public class PlayerSkeleton {
       int numHoleRows = holesArray[3];
       int numHoleCols = holesArray[4];
       int concavity = getConcavity();
-      
+
       heuristic -= (double)(weights[0]*maxHeight);
       heuristic -= (double)(weights[1]*totalHeight);
       heuristic -= (double)(weights[2]*bumpiness);
@@ -471,8 +472,8 @@ public class PlayerSkeleton {
 
 
       // System.out.println((weights[8]*concavity)/100);
-      
-      return heuristic;  
+
+      return heuristic;
     }
 
     public int getMaxHeight() {
@@ -491,7 +492,7 @@ public class PlayerSkeleton {
       for (int j = 6; j < COLS; j++) {
         concavity += top[5] - top[j];
       }
-            
+
       return concavity;
     }
 
@@ -503,9 +504,9 @@ public class PlayerSkeleton {
       int holeMultiplier = 1; // holes on top of holes are really bad
       int holeDepth = 1; // total number of blocks above holes
       int totalHoleDepth = 0;
-      
+
       for (int j = 0; j < field[0].length; j++){
-        holeMultiplier = 1; 
+        holeMultiplier = 1;
         holeDepth = 1;
         for (int i = top[j]-2; i >= 0; i--){
           if (field[i][j] == 0){
@@ -522,8 +523,8 @@ public class PlayerSkeleton {
           } else {
             holeDepth++;
           }
-            
-        } 
+
+        }
       }
 
       int[] result = {holes, maxHoleHeight, totalHoleDepth, IntStream.of(rowHoles).sum(), IntStream.of(colHoles).sum()};
@@ -553,6 +554,7 @@ public class PlayerSkeleton {
     pTop = State.getpTop();
 
     initializeLegalMoves();
+      new TFrame(s);
 
     ForkJoinPool concurrentExecutor = new ForkJoinPool();
     PlayerSkeleton p = new PlayerSkeleton(concurrentExecutor);
@@ -565,6 +567,13 @@ public class PlayerSkeleton {
         while (!s.hasLost()) {
           pickedMove = p.pickMove(s, s.legalMoves());
             s.makeMove(pickedMove);
+            s.draw();
+            s.drawNext(0, 0);
+            try {
+                Thread.sleep(0);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             moves++;
         }
     } catch (ArrayIndexOutOfBoundsException e) {
@@ -1143,9 +1152,9 @@ public class PlayerSkeleton {
       if (this.score > pos.score) {
         return 1;
       } else if (this.score < pos.score) {
-        return -1;  
+        return -1;
       } else {
-        return 0;  
+        return 0;
       }
       // return (int) (this.score - pos.score);
     }

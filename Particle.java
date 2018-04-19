@@ -84,8 +84,8 @@ public class Particle implements Comparable<Particle> {
                 weights[i] = genes[i];
             }
             int fitness = PlayerSkeleton.run(weights);
-//            System.out.println("New particle fitness obtained: " + fitness + " for particle [ " + Arrays.toString
-//                    (weights) + "].");
+            System.out.println("New particle fitness obtained: " + fitness + " for particle [ " + Arrays.toString
+                    (weights) + "].");
             return (float) fitness;
         }
     };
@@ -95,7 +95,6 @@ public class Particle implements Comparable<Particle> {
 
         @Override
         public Float execute(Iterable<Float> inputs) {
-//            System.out.println("Taking average");
             int count = 0;
             float sum = 0.0f;
 
@@ -103,7 +102,10 @@ public class Particle implements Comparable<Particle> {
                 sum += num;
                 ++count;
             }
-            return sum / (float) count;
+            Float av = sum / (float) count;
+            System.out.println("Taking average: " + sum + " /" + count+ " = " + sum / (float) av );
+
+            return av;
         }
     };
 
@@ -239,6 +241,10 @@ public class Particle implements Comparable<Particle> {
     public void setGene(int index, double value) {
         position[index] = value;
         fitness = 0;
+    }
+
+    public void setPosition(double[] position) {
+        this.position = position;
     }
 
     public void mutateGene(int index, double value) {
