@@ -6,17 +6,16 @@ public class Constants {
     static  double mutationRate = 0.05;
     public static double NUM_OFFSPRING = 0.5;
     static double tournamentSize = 0.5;
-    static int POPULATION_SIZE = 50;
+    static int POPULATION_SIZE = 1000;
     public static int MAX_LOST_GENERATION = 20;
     public static double maxInitialWeight = 2.0;
 
     // Number of runs averaged to get the fitness
-    static int NUM_RUNS = 10;
+    static int NUM_RUNS = 50;
     public static int MAX_ITERATIONS = 100;
-    public static int PSO_ITERATIONS = 5;
+    public static int PSO_ITERATIONS = 100000000;
     public static int MAX_MOVES = 500;
-    public static double[] defaultWeights = {0.43073534107437195, 0.00569900050557608, 0.1530691183616109, 0.2614120305354576, 0.17017526616739997, 0.320744479003941,
-            0.3234036096839037, 0.47519053514763776, 0.014078593660851915, 0.4158963908655835};
+    public static double[] defaultWeights = {807.9475181444632, 11.887473709241078, 687.3817025913254, 271.703308418665, -86.14077487670852, 856.5458745173605, 640.6716881259781, 125.28221937611306, 144.86750211592832, 684.1768557823555};
     public static double MAX_HEURISTICS = Double.MAX_VALUE;
     public static double MAX_INIT_WEIGHT = 2.0;
 }
