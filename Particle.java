@@ -1,4 +1,6 @@
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ForkJoinPool;
@@ -77,12 +79,13 @@ public class Particle implements Comparable<Particle> {
             Float>() {
         @Override
         public Float evaluate(Double[] genes) {
-//            System.out.println("Evaluating fitness");
             double[] weights = new double[Constants.defaultGeneLength];
             for (int i = 0; i < Constants.defaultGeneLength; i++) {
                 weights[i] = genes[i];
             }
             int fitness = PlayerSkeleton.run(weights);
+            System.out.println("New particle fitness obtained: " + fitness + " for particle [ " + Arrays.toString
+                    (weights) + "].");
             return (float) fitness;
         }
     };
@@ -100,7 +103,6 @@ public class Particle implements Comparable<Particle> {
                 sum += num;
                 ++count;
             }
-
             return sum / (float) count;
         }
     };
