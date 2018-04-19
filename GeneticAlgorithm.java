@@ -82,7 +82,7 @@ public class GeneticAlgorithm {
         Particle indiv1 = tournamentSelection(oldPopulation);
         Particle indiv2 = tournamentSelection(oldPopulation);
         Particle newIndiv = crossover(indiv1, indiv2);
-        System.out.println("crossover: " + Arrays.toString(newIndiv.getGenes()));
+//        System.out.println("crossover: " + Arrays.toString(newIndiv.getGenes()));
         newPopulation.saveIndividual(newIndiv);
         System.out.println("finished fillWithFittest");
         return null;
@@ -121,13 +121,13 @@ public class GeneticAlgorithm {
         } else {
             c1 = (double) indiv1.getFitness() / (double) totalFitness;
             c2 = (double) indiv2.getFitness() / (double) totalFitness;
-            System.out.println("c1: " + c1 + "c2: " + c2);
+//            System.out.println("c1: " + c1 + "c2: " + c2);
         }
 
-        System.out.println("new gene1:");
+//        System.out.println("new gene1:");
         for(int i=0;i<Constants.defaultGeneLength; i++){
             newGene1[i] = c1*gene1[i] +c2*gene2[i];
-            System.out.println(newGene1[i]);
+//            System.out.println(newGene1[i]);
         }
 
         return newSol;
@@ -136,13 +136,12 @@ public class GeneticAlgorithm {
     // Mutate an individual
     private static void mutate(Particle indiv) {
         // Loop through genes
-        for (int i = 0; i < indiv.size(); i++) {
-            if (Math.random() <= Constants.mutationRate) {
-                // Create random gene
-                Random random = new Random();
-                double gene = (random.nextDouble() * 0.4 - 0.2) + 1;
-                indiv.mutateGene(i, gene);
-            }
+
+        Random random = new Random();
+        if (Math.random() <= Constants.mutationRate) {
+            int position = random.nextInt(10);
+            double gene = (random.nextDouble() * 0.4 - 0.2) + 1;
+            indiv.mutateGene(position, gene);
         }
     }
 
