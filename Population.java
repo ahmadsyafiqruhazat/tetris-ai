@@ -3,6 +3,7 @@ import javafx.util.Pair;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Population {
@@ -13,12 +14,15 @@ public class Population {
         // Initialise population
         chromosomes = new CopyOnWriteArrayList<>();
         if (initialise) {
+
+            Particle carryOverChromosome = new Particle();
+            carryOverChromosome.setPosition(Constants.defaultWeights);
+
             // Loop and create chromosomes
             for (int i = 0; i < populationSize; i++) {
-                if(i==0) {
-                    Particle newChromosome = new Particle();
-                    double[] good = {0.9252657084322371, 1.791060991167827, 1.6301289861264825, 1.221250538049939, 0.1050588365382541, 0.765367780014832, 0.8630601768977213, 1.0040737814518448, 0.08598196212509279, 1.7338714622965667};
-                    newChromosome.setPosition(good);
+                if (i <= populationSize * Constants.CARRY_OVER_RATE) {
+                    Particle mutatedCarryOver = GeneticAlgorithm.getMutated(carryOverChromosome);
+                    chromosomes.add(mutatedCarryOver);
                 } else {
                     Particle newChromosome = new Particle();
                     newChromosome.generateIndividual();

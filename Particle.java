@@ -231,6 +231,10 @@ public class Particle implements Comparable<Particle> {
         }
     }
 
+    public void setPosition(double[] position) {
+        this.position = position;
+    }
+
     public double getGene(int index) {
         return position[index];
     }
