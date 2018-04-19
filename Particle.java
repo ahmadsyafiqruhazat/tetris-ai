@@ -1,8 +1,9 @@
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ForkJoinPool;
 
-public class Particle {
+public class Particle implements Comparable<Particle> {
     private static final int INIT_FITNESS = 0;
 
     public static final int DIMENSIONS = 10;
@@ -27,7 +28,7 @@ public class Particle {
 
     private boolean hasUpdated  = true;
 
-    private ArrayList<Double[]> allPositions = new ArrayList<>();
+    private CopyOnWriteArrayList<Double[]> allPositions = new CopyOnWriteArrayList<>();
     private PlayerSkeleton.ConcurrentExecutor concurrentExecutor = new PlayerSkeleton.ConcurrentExecutor(new
             ForkJoinPool());
 
@@ -119,10 +120,16 @@ public class Particle {
         for (int i = 0; i < Constants.defaultGeneLength; i++) {
             weights[i] = position[i];
         }
+
         for (int i = 0; i < Constants.NUM_RUNS; i++) {
             allPositions.add(weights);
         }
 
+<<<<<<< HEAD
+=======
+//        System.out.println("Number of runs: " + allPositions.size());
+
+>>>>>>> 80e3e9dfd01bb508395b7cf45149b3cce75a242d
         result = concurrentExecutor.execute(FITNESS_FUNC, AVG_SCORE, allPositions);
         fitness = (int) result;
     }
@@ -135,6 +142,7 @@ public class Particle {
     }
 
     private void updateGBest() {
+        System.out.println("Current Global Best: " + gBestFitness + " Particle fitness: " + fitness);
         if (fitness > gBestFitness) {
             System.arraycopy(position, 0, gBest, 0, position.length);
             gBestFitness = fitness;
@@ -148,12 +156,12 @@ public class Particle {
         double[] second = Calc.scale(Calc.subtract(pBest, position), rand1 * COGNITIVE_WEIGHT);
         double[] third = Calc.scale(Calc.subtract(gBest, position), rand2 * SOCIAL_WEIGHT);
         velocity = Calc.add(Calc.add(first, second), third);
-        bounceVelocity();
+//        bounceVelocity();
     }
 
     private void updatePosition() {
         position = Calc.add(position, velocity);
-        bouncePosition();
+//        bouncePosition();
     }
 
     private void initializePosition() {
@@ -215,7 +223,7 @@ public class Particle {
 
     public void generateIndividual() {
         for (int i = 0; i < size(); i++) {
-            double gene = random.nextDouble() * 1000.0f;
+            double gene = random.nextDouble() * Constants.MAX_INIT_WEIGHT;
             position[i] = gene;
         }
     }
@@ -236,7 +244,7 @@ public class Particle {
 
     public void mutateGene(int index, double value) {
         hasUpdated = false;
-        position[index] += value;
+        position[index] *= value;
         fitness = 0;
     }
 
@@ -275,5 +283,17 @@ public class Particle {
     public int getPBestFitness() {
         return pBestFitness;
     }
+
+    @Override
+    public int compareTo(Particle particle) {
+        return this.getFitness() - particle.getFitness();
+    }
+
+    public void reset(){
+        initializeFitness();
+        initializePBest();
+        initializeVelocity();
+    }
+
 }
 

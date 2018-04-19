@@ -3,14 +3,15 @@ import javafx.util.Pair;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Population {
 
-    ArrayList<Particle> chromosomes;
+    CopyOnWriteArrayList<Particle> chromosomes;
 
     public Population(int populationSize, boolean initialise) {
         // Initialise population
-        chromosomes = new ArrayList<>();
+        chromosomes = new CopyOnWriteArrayList<>();
         if (initialise) {
             // Loop and create chromosomes
             for (int i = 0; i < populationSize; i++) {
@@ -22,7 +23,11 @@ public class Population {
     }
 
     public void setChromosomes(ArrayList<Particle> chromosomes) {
-        this.chromosomes = chromosomes;
+        CopyOnWriteArrayList<Particle> copyOnWriteChromosomes = new CopyOnWriteArrayList<>();
+        for (Particle chromosome: chromosomes) {
+            copyOnWriteChromosomes.add(chromosome);
+        }
+        this.chromosomes = copyOnWriteChromosomes;
     }
 
     /* Getters */
@@ -59,6 +64,19 @@ public class Population {
     }
 
     public ArrayList<Particle> getChromosomes() {
-        return chromosomes;
+        ArrayList<Particle> retChromosomes = new ArrayList<>();
+        for (Particle chromosome: chromosomes) {
+            retChromosomes.add(chromosome);
+        }
+        return retChromosomes;
+    }
+
+    public void sort(){
+        System.out.println("Sort: population size - " + chromosomes.size());
+        Collections.sort(chromosomes, Collections.reverseOrder());
+    }
+
+    public void reset(){
+        for(Particle p : chromosomes) p.reset();
     }
 }

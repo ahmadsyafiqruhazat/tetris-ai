@@ -1,3 +1,8 @@
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.lang.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,14 +31,8 @@ public class PlayerSkeleton {
   private static int[][][] pTop;
 
 
-  private double[] weights = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f};
-  private double[] nextWeights = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f};
-  //        double[] weights = {7.777049566227959, 6.249963955307919, 15.025267484201208, 18.083431916001572,
-  //                12.608808031021113, 19.656750655339692, 8.005170457533438, -4.787722424760801, -8.089689910134979,
-  //                2.28525592482589  };
-  //        double[] nextWeights = {7.777049566227959, 6.249963955307919, 15.025267484201208, 18.083431916001572,
-  //                12.608808031021113, 19.656750655339692, 8.005170457533438, -4.787722424760801, -8.089689910134979,
-  //                2.28525592482589  };
+  private double[] weights = Constants.defaultWeights;
+  private double[] nextWeights = Constants.defaultWeights;
   private static double PRUNE_RATE_INITIAL = 0.7;
   private static double PRUNE_RATE_FINAL = 0.8;
   private static int[][][] legalMoves = new int[N_PIECES][][];
@@ -45,10 +44,28 @@ public class PlayerSkeleton {
   private CopyOnWriteArrayList<Move> possibleMoves = new CopyOnWriteArrayList<>();
   //  private ArrayList<Move> possibleMoves = new ArrayList<>();
 
+
+  public PlayerSkeleton(ForkJoinPool forkJoinPool) {
+    this.forkJoinExecutor = forkJoinPool;
+    this.concurrentExecutor = new ConcurrentExecutor(forkJoinPool);
+    double[] newWeights = Constants.defaultWeights;
+    double[] newNextWeights = Constants.defaultWeights;
+    this.weights = newWeights;
+    this.nextWeights = newNextWeights;
+    this.evaluator = new WeightedSumEvaluator(EVALUATORS, weights, nextWeights);
+
+  }
+
+  public PlayerSkeleton(ForkJoinPool forkJoinPool, double[] weights, double[] nextWeights) {
+    this.concurrentExecutor = new ConcurrentExecutor(forkJoinPool);
+    this.evaluator = new WeightedSumEvaluator(EVALUATORS, weights, nextWeights);
+
+  }
+
   //implement this function to have a working system
   public int pickMove(State s, int[][] legalMoves) {
     int bestMove = 0;
-    double maxHeuristic = -9999;
+    double maxHeuristic = -Constants.MAX_HEURISTICS;
     int nextPiece = s.getNextPiece();
     WorkingState ws = new WorkingState(s);
     
@@ -81,6 +98,7 @@ public class PlayerSkeleton {
     return bestMove;
   }
 
+
   public double ldfsGetNextHeuristic(WorkingState ws, double[] weights, int depthLimit) {
     double[] nextHeuristic = new double[N_PIECES];
     Possibility[] possibilities;
@@ -88,15 +106,14 @@ public class PlayerSkeleton {
     double maxHeuristic;
 
     for (int i = 0; i < N_PIECES; i++) {
-      nextHeuristic[i] = -9999;
+      nextHeuristic[i] = -Constants.MAX_HEURISTICS;
     }
-
     // actual loop
     // o(n*)
     for (int n = 0; n < N_PIECES; n++) {
       // new array of possibilities for piece n
       possibilities = new Possibility[legalMoves[n].length];
-      maxHeuristic = -9999;
+      maxHeuristic = -Constants.MAX_HEURISTICS;
       for (int i = 0; i < legalMoves[n].length; i++) {
         possibilities[i] = new Possibility(n, i, legalMoves[n]);
         possibilities[i].defineWS(ws);
@@ -121,7 +138,7 @@ public class PlayerSkeleton {
       }
     }
 
-    return Arrays.stream(nextHeuristic).average().orElse(-9999);
+    return Arrays.stream(nextHeuristic).average().orElse(-Constants.MAX_HEURISTICS);
   }
 
   public double getNextHeuristic(WorkingState ws, double[] weights) {
@@ -154,7 +171,7 @@ public class PlayerSkeleton {
     Heuristics nextH = new Heuristics(weights);
 
     for (int i = 0; i < N_PIECES; i++) {
-      nextHeuristic[i] = -9999;
+      nextHeuristic[i] = -Constants.MAX_HEURISTICS;
     }
 
     // actual loop
@@ -164,7 +181,7 @@ public class PlayerSkeleton {
         nextWs = new WorkingState(n, legalMoves[n][i][ORIENT], legalMoves[n][i][SLOT], ws);
 
         // default score for if next move causes lost
-        double heuristicNextMove = -9999;
+        double heuristicNextMove = -Constants.MAX_HEURISTICS;
 
         if (!nextWs.lost) {
           heuristicNextMove = nextH.score(nextWs);
@@ -196,6 +213,29 @@ public class PlayerSkeleton {
     pHeight = State.getpHeight();
     pTop = State.getpTop();
 
+    initializeLegalMoves();
+
+    new TFrame(s);
+
+    ForkJoinPool forkJoinPool = new ForkJoinPool();
+    PlayerSkeleton p = new PlayerSkeleton(forkJoinPool);
+    while (!s.hasLost()) {
+      s.makeMove(p.pickMove(s, s.legalMoves()));
+      s.draw();
+      s.drawNext(0, 0);
+      try {
+        Thread.sleep(0);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+
+    }
+    System.out.println("You have completed " + s.getRowsCleared() + " rows.");
+  }
+
+
+  static void initializeLegalMoves() {
+
     // generate legal moves - done globally for use in ldfs
     for(int i = 0; i < N_PIECES; i++) {
       //figure number of legal moves
@@ -217,37 +257,6 @@ public class PlayerSkeleton {
         }
       }
     }
-    new TFrame(s);
-
-    ForkJoinPool forkJoinPool = new ForkJoinPool();
-    PlayerSkeleton p = new PlayerSkeleton(forkJoinPool);
-    while (!s.hasLost()) {
-      s.makeMove(p.pickMove(s, s.legalMoves()));
-      s.draw();
-      s.drawNext(0, 0);
-      try {
-        Thread.sleep(1);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-
-    }
-    System.out.println("You have completed " + s.getRowsCleared() + " rows.");
-  }
-
-  public PlayerSkeleton(ForkJoinPool forkJoinPool) {
-    this.forkJoinExecutor = forkJoinPool;
-    this.concurrentExecutor = new ConcurrentExecutor(forkJoinPool);
-    double[] newWeights = { 1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1 / 3, 1.0f, 1.0f, 1 / 5, 1.0f };
-    double[] newNextWeights = { 1.0f, 1.0f, 1.0f, 2.0f, 1.0f, 1 / 3, 1.0f, 1.0f, 1 / 5, 1.0f };
-    this.weights = newWeights;
-    this.nextWeights = newNextWeights;
-    this.evaluator = new WeightedSumEvaluator(EVALUATORS, weights, nextWeights);
-  }
-
-  public PlayerSkeleton(ForkJoinPool forkJoinPool, double[] weights, double[] nextWeights) {
-    this.concurrentExecutor = new ConcurrentExecutor(forkJoinPool);
-    this.evaluator = new WeightedSumEvaluator(EVALUATORS, weights, nextWeights);
   }
 
   /**
@@ -543,6 +552,7 @@ public class PlayerSkeleton {
     pHeight = State.getpHeight();
     pTop = State.getpTop();
 
+<<<<<<< HEAD
     // generate legal moves - done globally for use in ldfs
     for(int i = 0; i < N_PIECES; i++) {
       //figure number of legal moves
@@ -564,14 +574,37 @@ public class PlayerSkeleton {
         }
       }
     }
+=======
+    initializeLegalMoves();
+>>>>>>> 80e3e9dfd01bb508395b7cf45149b3cce75a242d
 
     ForkJoinPool concurrentExecutor = new ForkJoinPool();
     PlayerSkeleton p = new PlayerSkeleton(concurrentExecutor);
     p.setWeights(weights);
     int moves = 0;
-    while (!s.hasLost() && moves <= Constants.MAX_MOVES) {
-      s.makeMove(p.pickMove(s, s.legalMoves()));
-      moves++;
+
+    int pickedMove=0;
+
+    try {
+        while (!s.hasLost() && moves <= Constants.MAX_MOVES) {
+          pickedMove = p.pickMove(s, s.legalMoves());
+            s.makeMove(pickedMove);
+            moves++;
+        }
+    } catch (ArrayIndexOutOfBoundsException e) {
+        e.printStackTrace();
+        System.out.print("Fail. Weights: " );
+        for (int i = 0; i < weights.length; i++) {
+            System.out.print(weights[i] + ", ");
+        }
+        System.out.println();
+        System.out.println("Picked Move: " + pickedMove);
+      try {
+        serializeDataOut(s);
+      } catch (IOException e1) {
+        e1.printStackTrace();
+      }
+      return 0;
     }
     return s.getRowsCleared();
   }
@@ -970,7 +1003,6 @@ public class PlayerSkeleton {
 
     public Float evaluateNext(MoveResult moveResult) {
       float sum = 0.0f;
-
       for (int i = 0; i < evaluators.length; ++i) {
         float score = evaluators[i].evaluate(moveResult);
         sum += score * nextWeights[i];
@@ -1118,7 +1150,7 @@ public class PlayerSkeleton {
       this.piece = piece;
       this.idx = idx;
       this.legalMoves = legalMoves;
-      score = -9999;
+      score = -Constants.MAX_HEURISTICS;
     }
 
     public void defineWS(WorkingState original) {
@@ -1141,6 +1173,24 @@ public class PlayerSkeleton {
       }
       // return (int) (this.score - pos.score);
     }
+  }
+
+  //save state for debug
+  public static void serializeDataOut(State ish)throws IOException {
+    String fileName= "state.txt";
+    FileOutputStream fos = new FileOutputStream(fileName);
+    ObjectOutputStream oos = new ObjectOutputStream(fos);
+    oos.writeObject(ish);
+    oos.close();
+  }
+
+  public static State serializeDataIn() throws IOException, ClassNotFoundException{
+    String fileName= "Test.txt";
+    FileInputStream fin = new FileInputStream(fileName);
+    ObjectInputStream ois = new ObjectInputStream(fin);
+    State state= (State) ois.readObject();
+    ois.close();
+    return state;
   }
 
 }

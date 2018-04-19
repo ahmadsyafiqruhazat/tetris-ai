@@ -1,8 +1,15 @@
 import javafx.util.Pair;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
+
+import com.sun.org.apache.bcel.internal.generic.POP;
 
 public class GeneticAlgorithm {
 
@@ -11,50 +18,116 @@ public class GeneticAlgorithm {
 
     // Evolve a population
     public static Population evolvePopulation(Population pop) {
+        Population newPopulation = new Population(pop.size(), false);
 
+        // Crossover population
         // Loop over the population size and create new chromosomes with
         // crossover
 
-        for (int i = 0; i <(int)(Constants.NUM_OFFSPRING*Constants.POPULATION_SIZE); i++) {
-            Pair<Particle,Integer> indiv1 = tournamentSelection(pop);
-            Pair<Particle,Integer> indiv2 = tournamentSelection(pop);
-            Particle[] newIndiv = crossover(indiv1.getKey(), indiv2.getKey());
-            pop.saveIndividual(newIndiv[0],indiv1.getValue());
-            pop.saveIndividual(newIndiv[1],indiv2.getValue());
+        Collection<ForkJoinTask<Void>> allTasks = new ArrayList<>();
+        for (int i = 0 ; i <(int)(Constants.NUM_OFFSPRING * pop.size()); i++) {
+            ForkJoinTask task = new SelectionTask(pop, newPopulation);
+            allTasks.add(task);
+        }
+        ForkJoinTask.invokeAll(allTasks);
 
+        for (ForkJoinTask<Void> task: allTasks) {
+            task.join();
+        }
+
+        pop.sort();
+
+        for(int i = 0; i < pop.size() - (int)(Constants.NUM_OFFSPRING * pop.size()); i++){
+            System.out.println("particle " + i + "'s fitness: " + pop.getIndividual(i).getFitness());
+            newPopulation.saveIndividual(pop.getIndividual(i));
         }
 
         // Mutate population
-        for (int i = 0; i < pop.size(); i++) {
-            mutate(pop.getIndividual(i));
+        for (int i = 0; i < newPopulation.size(); i++) {
+            mutate(newPopulation.getIndividual(i));
         }
 
-        return pop;
+        return newPopulation;
     }
+
+
+    static class SelectionTask extends ForkJoinTask<Void> {
+        public SelectionTask(Population oldPopulation, Population newPopulation) {
+            this.oldPopulation = oldPopulation;
+            this.newPopulation = newPopulation;
+        }
+
+        @Override
+        protected boolean exec() {
+            fillWithFittest(oldPopulation, newPopulation);
+            return true;
+        }
+
+        @Override
+        public Void getRawResult() {
+            return null;
+        }
+
+        @Override
+        protected void setRawResult(Void value) {
+        }
+
+        private Population oldPopulation;
+        private Population newPopulation;
+
+        private static final long serialVersionUID = 1L;
+    }
+
+    static Void fillWithFittest(Population oldPopulation, Population newPopulation) {
+        Particle indiv1 = tournamentSelection(oldPopulation);
+        Particle indiv2 = tournamentSelection(oldPopulation);
+        Particle newIndiv = crossover(indiv1, indiv2);
+        newPopulation.saveIndividual(newIndiv);
+        System.out.println("finished fillWithFittest");
+        return null;
+    }
+
+    private static final PlayerSkeleton.Evaluator<Double[], Float> EVOLVE_FUNC = new PlayerSkeleton.Evaluator<Double[],
+            Float>() {
+        @Override
+        public Float evaluate(Double[] genes) {
+//            System.out.println("Evaluating fitness");
+            double[] weights = new double[Constants.defaultGeneLength];
+            for (int i = 0; i < Constants.defaultGeneLength; i++) {
+                weights[i] = genes[i];
+            }
+            int fitness = PlayerSkeleton.run(weights);
+            return (float) fitness;
+        }
+    };
 
     // Crossover chromosomes
 
-    private static Particle[] crossover(Particle indiv1, Particle indiv2) {
-        Particle newSol1 = new Particle();
-        Particle newSol2 = new Particle();
-
-        double[] newGene1 = newSol1.getGenes();
-        double[] newGene2 = newSol2.getGenes();
+    private static Particle crossover(Particle indiv1, Particle indiv2) {
+        Particle newSol = new Particle();
+        double c1,c2;
+        double[] newGene1 = newSol.getGenes();
         int length = indiv1.size();
 
-        Random random = new Random();
-        if (Math.random() <= Constants.crossoverRate) {
-            int crossoverPoint = random.nextInt(length);
-            System.arraycopy(indiv1.getGenes(), 0, newGene1, 0, crossoverPoint);
-            System.arraycopy(indiv2.getGenes(), 0, newGene2, 0, crossoverPoint);
-            System.arraycopy(indiv1.getGenes(), crossoverPoint, newGene1, crossoverPoint, length-crossoverPoint);
-            System.arraycopy(indiv1.getGenes(), crossoverPoint, newGene1, crossoverPoint, length-crossoverPoint);
+        double[] gene1 = indiv1.getGenes();
+        double[] gene2 = indiv2.getGenes();
 
+        int totalFitness = indiv1.getFitness() + indiv2.getFitness();
+        
+        if (totalFitness==0) {
+            c1 = 0.5;
+            c2 = 0.5;
         } else {
-            return new Particle[] { indiv1,indiv2};
+            c1 = indiv1.getFitness() / totalFitness;
+            c2 = indiv2.getFitness() / totalFitness;
         }
 
-        return new Particle[] { newSol1,newSol2};
+        Random random = new Random();
+        for(int i=0;i<Constants.defaultGeneLength; i++){
+            newGene1[i] = c1*gene1[i] +c2*gene2[i];
+        }
+
+        return newSol;
     }
 
     // Mutate an individual
@@ -64,14 +137,14 @@ public class GeneticAlgorithm {
             if (Math.random() <= Constants.mutationRate) {
                 // Create random gene
                 Random random = new Random();
-                double gene = random.nextDouble() * 0.4 - 0.2;
+                double gene = (random.nextDouble() * 0.4 - 0.2) + 1;
                 indiv.mutateGene(i, gene);
             }
         }
     }
 
     // Select chromosomes for crossover
-    private static Pair<Particle,Integer> tournamentSelection(Population pop) {
+    private static Particle tournamentSelection(Population pop) {
         // Create a tournament population
         Population tournament = new Population((int)(Constants.tournamentSize * Constants.POPULATION_SIZE), false);
         // For each place in the tournament get a random individual
@@ -83,7 +156,7 @@ public class GeneticAlgorithm {
         }
         // Get the fittest
         Pair<Particle,Integer>fittest = tournament.getFittest();
-        return new Pair<Particle,Integer>(fittest.getKey(), pos.get(fittest.getValue()));
+        return fittest.getKey();
     }
 
     public Population run( Population myPop, int i) {
