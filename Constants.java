@@ -5,7 +5,7 @@ public class Constants {
     static double crossoverRate = 0.5;
     static  double mutationRate = 0.05;
     public static double NUM_OFFSPRING = 0.3;
-    static double tournamentSize = 0.1;
+    static double tournamentSize = 0.5;
     static int POPULATION_SIZE = 20;
     public static int MAX_LOST_GENERATION = 20;
     public static double maxInitialWeight = 2.0;
