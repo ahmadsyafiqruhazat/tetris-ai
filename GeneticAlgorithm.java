@@ -173,17 +173,17 @@ public class GeneticAlgorithm {
 
    //     while (true) {
 //            System.out.println("getFitness: " +myPop.getFittest().getFitness());
-            if(maxFitness > myPop.getFittest().getKey().getFitness()){
-                lostGeneration++;
-
-            } else {
-                maxFitness = myPop.getFittest().getKey().getFitness();
-                lostGeneration = 0;
-            }
-//            if(lostGeneration> Constants.MAX_LOST_GENERATION){
-//                break;
+//            if(maxFitness > myPop.getFittest().getKey().getFitness()){
+//                lostGeneration++;
+//
+//            } else {
+//                maxFitness = myPop.getFittest().getKey().getFitness();
+//                lostGeneration = 0;
 //            }
-            generationCount++;
+////            if(lostGeneration> Constants.MAX_LOST_GENERATION){
+////                break;
+////            }
+//            generationCount++;
 //            System.out.println("Generation: " + i + " Fittest: " + myPop.getFittest().getKey().getFitness() + " Max " + maxFitness);
             myPop = evolvePopulation(myPop);
 //            System.out.println("Lost " + lostGeneration + " Max: "+  maxFitness);
