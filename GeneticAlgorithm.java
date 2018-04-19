@@ -79,11 +79,11 @@ public class GeneticAlgorithm {
     }
 
     static Void fillWithFittest(Population oldPopulation, Population newPopulation) {
-        System.out.println("entered fillWithFittest");
         Particle indiv1 = tournamentSelection(oldPopulation);
         Particle indiv2 = tournamentSelection(oldPopulation);
         Particle newIndiv = crossover(indiv1, indiv2);
         newPopulation.saveIndividual(newIndiv);
+        System.out.println("finished fillWithFittest");
         return null;
     }
 
