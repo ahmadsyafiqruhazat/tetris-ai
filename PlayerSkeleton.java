@@ -562,7 +562,11 @@ public class PlayerSkeleton {
     int pickedMove=0;
 
     try {
-        while (!s.hasLost() && moves <= Constants.MAX_MOVES) {
+        while (!s.hasLost()) {
+          if (moves >= Constants.MAX_MOVES) {
+            Constants.MAX_MOVES *= 10;
+            System.out.println("MAX Move has been updated( * 10) to: " + Constants.MAX_MOVES);
+          }
           pickedMove = p.pickMove(s, s.legalMoves());
             s.makeMove(pickedMove);
             moves++;

@@ -18,6 +18,18 @@ public class HPSOGA {
             myPop.reset();
         }
     }
+
+    private void printCosntants() {
+
+        System.out.println("Constants: ==================");
+        System.out.println("POPULATION_SIZE: " + POPULATION_SIZE);
+        System.out.println("tournamentSize: " + tournamentSize);
+        System.out.println("maxInitialWeight: " + maxInitialWeight);
+        System.out.println("PSO_ITERATIONS: " + PSO_ITERATIONS);
+        System.out.println("NUM_RUNS: " + NUM_RUNS);
+        System.out.println("MAX_MOVES: " + MAX_MOVES);
+        System.out.println("MAX_INIT_WEIGHT: " + MAX_INIT_WEIGHT);
+    }
     public static void main(String[] args){
         HPSOGA optimize = new HPSOGA();
         optimize.run();
