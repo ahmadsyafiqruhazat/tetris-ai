@@ -103,7 +103,7 @@ public class Particle implements Comparable<Particle> {
                 ++count;
             }
             Float av = sum / (float) count;
-            System.out.println("Taking average: " + sum + " /" + count+ " = " + sum / (float) av );
+            System.out.println("Taking average: " + sum + " /" + count+ " = " + av );
 
             return av;
         }
