@@ -6,7 +6,7 @@ public class Constants {
     static  double mutationRate = 0.05;
     public static double NUM_OFFSPRING = 0.5;
     static double tournamentSize = 0.5;
-    static int POPULATION_SIZE = 1000;
+    static int POPULATION_SIZE = 100;
     public static int MAX_LOST_GENERATION = 20;
     public static double maxInitialWeight = 2.0;
 
