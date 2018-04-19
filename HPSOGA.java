@@ -5,6 +5,7 @@ public class HPSOGA {
     private ParticleSwarmOptimization pso;
 
     public void run(){
+        printCosntants();
         myPop =  new Population(Constants.POPULATION_SIZE, true);
         ga = new GeneticAlgorithm();
         for(int i = 0 ; i< Constants.MAX_ITERATIONS; i++) {
