@@ -13,8 +13,8 @@ public class HPSOGA {
             System.out.println("Iteration: " + i);
             System.out.println("Running PSO");
             pso = new ParticleSwarmOptimization(myPop, i);
-            myPop.setChromosomes(pso.run());
-            System.out.println("Running GA");
+            pso.run();
+       //     System.out.println("Running GA");
        //     myPop = ga.run(myPop, i);
         //    myPop.reset();
         }
