@@ -123,8 +123,8 @@ public class GeneticAlgorithm {
             c1 = 0.5;
             c2 = 0.5;
         } else {
-            c1 = indiv1.getFitness() / totalFitness;
-            c2 = indiv2.getFitness() / totalFitness;
+            c1 = (double) indiv1.getFitness() / (double) totalFitness;
+            c2 = (double) indiv2.getFitness() / (double) totalFitness;
         }
 
         Random random = new Random();
