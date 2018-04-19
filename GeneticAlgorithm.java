@@ -86,7 +86,7 @@ public class GeneticAlgorithm {
         System.out.println("Indiv 2: " + Arrays.toString(indiv2.getGenes()));
         Particle newIndiv = crossover(indiv1, indiv2);
 
-        System.out.println("crossover: " + Arrays.toString(.getGenes()));
+        System.out.println("crossover: " + Arrays.toString(newIndiv.getGenes()));
         newPopulation.saveIndividual(newIndiv);
         System.out.println("finished fillWithFittest");
         return null;
