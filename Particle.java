@@ -99,6 +99,8 @@ public class Particle implements Comparable<Particle> {
             float sum = 0.0f;
 
             for(float num: inputs) {
+                System.out.print(num);
+                System.out.println();
                 sum += num;
                 ++count;
             }
