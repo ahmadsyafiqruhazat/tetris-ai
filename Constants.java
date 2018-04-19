@@ -11,7 +11,7 @@ public class Constants {
     public static double maxInitialWeight = 2.0;
 
     // Number of runs averaged to get the fitness
-    static int NUM_RUNS = 20;
+    static int NUM_RUNS = 1;
     public static int MAX_ITERATIONS = 100;
     public static int PSO_ITERATIONS = 10;
     public static int MAX_MOVES = 200;

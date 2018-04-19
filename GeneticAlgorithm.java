@@ -80,12 +80,8 @@ public class GeneticAlgorithm {
 
     static Void fillWithFittest(Population oldPopulation, Population newPopulation) {
         Particle indiv1 = tournamentSelection(oldPopulation);
-        System.out.println("Indiv 1: " + Arrays.toString(indiv1.getGenes()));
         Particle indiv2 = tournamentSelection(oldPopulation);
-
-        System.out.println("Indiv 2: " + Arrays.toString(indiv2.getGenes()));
         Particle newIndiv = crossover(indiv1, indiv2);
-
         System.out.println("crossover: " + Arrays.toString(newIndiv.getGenes()));
         newPopulation.saveIndividual(newIndiv);
         System.out.println("finished fillWithFittest");
@@ -125,11 +121,13 @@ public class GeneticAlgorithm {
         } else {
             c1 = (double) indiv1.getFitness() / (double) totalFitness;
             c2 = (double) indiv2.getFitness() / (double) totalFitness;
+            System.out.println("c1: " + c1 + "c2: " + c2);
         }
 
-        Random random = new Random();
+        System.out.println("new gene1:");
         for(int i=0;i<Constants.defaultGeneLength; i++){
             newGene1[i] = c1*gene1[i] +c2*gene2[i];
+            System.out.println(newGene1[i]);
         }
 
         return newSol;
