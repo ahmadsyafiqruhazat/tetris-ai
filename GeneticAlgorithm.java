@@ -135,7 +135,7 @@ public class GeneticAlgorithm {
     }
 
     // Mutate an individual
-    private static void mutate(Particle indiv) {
+    static void mutate(Particle indiv) {
         // Loop through genes
 
         Random random = new Random();
@@ -144,6 +144,22 @@ public class GeneticAlgorithm {
             double gene = (random.nextDouble() * 0.4 - 0.2) + 1;
             indiv.mutateGene(position, gene);
         }
+    }
+
+    static Particle getMutated(Particle indiv) {
+        // Loop through genes
+
+        Particle mutated = new Particle();
+        Random random = new Random();
+        for (int i = 0; i < indiv.size(); i++) {
+            if (Math.random() <= Constants.mutationRate) {
+                double mutateScale = (random.nextDouble() * 0.4 - 0.2) + 1;
+                mutated.setGene(i, indiv.getGene(i) * mutateScale);
+            } else {
+                mutated.setGene(i, indiv.getGene(i));
+            }
+        }
+        return mutated;
     }
 
     // Select chromosomes for crossover
