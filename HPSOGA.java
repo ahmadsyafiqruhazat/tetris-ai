@@ -17,6 +17,8 @@ public class HPSOGA {
             System.out.println("Running GA");
             myPop = ga.run(myPop, i);
             myPop.reset();
+            Constants.MAX_MOVES *= 2;
+            System.out.println("Updated max move: " + Constants.MAX_MOVES);
         }
     }
 
