@@ -79,8 +79,7 @@ public class ParticleSwarmOptimization {
         Particle.SOCIAL_WEIGHT = SOCIAL_WEIGHT;
         Particle.gBest = gBest;
         Particle.gBestFitness = gBestFitness;
-        particles = new CopyOnWriteArrayList<>();
-        particles.addAll(p.chromosomes);
+        particles = p.chromosomes;
         iterationNo = i;
     }
 
