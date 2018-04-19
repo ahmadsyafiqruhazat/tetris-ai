@@ -554,7 +554,6 @@ public class PlayerSkeleton {
     pTop = State.getpTop();
 
     initializeLegalMoves();
-      new TFrame(s);
 
     ForkJoinPool concurrentExecutor = new ForkJoinPool();
     PlayerSkeleton p = new PlayerSkeleton(concurrentExecutor);
@@ -567,13 +566,6 @@ public class PlayerSkeleton {
         while (!s.hasLost()) {
           pickedMove = p.pickMove(s, s.legalMoves());
             s.makeMove(pickedMove);
-            s.draw();
-            s.drawNext(0, 0);
-            try {
-                Thread.sleep(0);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
             moves++;
         }
     } catch (ArrayIndexOutOfBoundsException e) {
