@@ -5,11 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Random;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
-
-import com.sun.org.apache.bcel.internal.generic.POP;
 
 public class GeneticAlgorithm {
 
@@ -85,12 +81,11 @@ public class GeneticAlgorithm {
         System.out.println("crossover's fitness: " + newIndiv.getFitness());
 //        System.out.println("crossover: " + Arrays.toString(newIndiv.getGenes()));
         newPopulation.saveIndividual(newIndiv);
-        System.out.println("finished fillWithFittest");
         return null;
     }
 
-    private static final PlayerSkeleton.Evaluator<Double[], Float> EVOLVE_FUNC = new PlayerSkeleton.Evaluator<Double[],
-            Float>() {
+    private static final PlayerSkeleton.Mapper<Double[], Float> EVOLVE_FUNC = new PlayerSkeleton.Mapper<Double[],
+                Float>() {
         @Override
         public Float evaluate(Double[] genes) {
 //            System.out.println("Evaluating fitness");

@@ -1,6 +1,3 @@
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ForkJoinPool;
@@ -75,8 +72,8 @@ public class Particle implements Comparable<Particle> {
     }
 
 
-    private static final PlayerSkeleton.Evaluator<Double[], Float> FITNESS_FUNC = new PlayerSkeleton.Evaluator<Double[],
-            Float>() {
+    private static final PlayerSkeleton.Mapper<Double[], Float> FITNESS_FUNC = new PlayerSkeleton.Mapper<Double[],
+                Float>() {
         @Override
         public Float evaluate(Double[] genes) {
             double[] weights = new double[Constants.defaultGeneLength];
@@ -90,8 +87,8 @@ public class Particle implements Comparable<Particle> {
         }
     };
 
-    private static final PlayerSkeleton.Executor<Float, Float> AVG_SCORE = new PlayerSkeleton.Executor<Float,
-            Float>() {
+    private static final PlayerSkeleton.Reducer<Float, Float> AVG_SCORE = new PlayerSkeleton.Reducer<Float,
+                Float>() {
 
         @Override
         public Float execute(Iterable<Float> inputs) {
@@ -129,7 +126,7 @@ public class Particle implements Comparable<Particle> {
 
 //        System.out.println("Number of runs: " + allPositions.size());
 
-        result = concurrentExecutor.execute(FITNESS_FUNC, AVG_SCORE, allPositions);
+        result = concurrentExecutor.reduce(FITNESS_FUNC, AVG_SCORE, allPositions);
         fitness = (int) result;
     }
 

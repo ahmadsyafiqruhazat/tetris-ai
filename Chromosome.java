@@ -43,8 +43,8 @@ public class Chromosome {
         fitness = 0;
     }
 
-    private static final PlayerSkeleton.Evaluator<Double[], Float> FITNESS_FUNC = new PlayerSkeleton.Evaluator<Double[],
-            Float>() {
+    private static final PlayerSkeleton.Mapper<Double[], Float> FITNESS_FUNC = new PlayerSkeleton.Mapper<Double[],
+                Float>() {
         @Override
         public Float evaluate(Double[] genes) {
             System.out.println("Evaluating fitness");
@@ -57,8 +57,8 @@ public class Chromosome {
         }
     };
 
-    private static final PlayerSkeleton.Executor<Float, Float> AVG_SCORE = new PlayerSkeleton.Executor<Float,
-            Float>() {
+    private static final PlayerSkeleton.Reducer<Float, Float> AVG_SCORE = new PlayerSkeleton.Reducer<Float,
+                Float>() {
 
         @Override
         public Float execute(Iterable<Float> inputs) {
@@ -91,7 +91,7 @@ public class Chromosome {
             for(int i =0 ; i<=Constants.NUM_RUNS; i++){
                 allGenes.add(weights);
             }
-            float result = concurrentExecutor.execute(FITNESS_FUNC, AVG_SCORE, allGenes);
+            float result = concurrentExecutor.reduce(FITNESS_FUNC, AVG_SCORE, allGenes);
             fitness = (int) result;
         }
 
