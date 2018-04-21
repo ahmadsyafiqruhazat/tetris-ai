@@ -1,7 +1,4 @@
-import java.lang.reflect.Array;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ForkJoinPool;
 
@@ -60,7 +57,7 @@ public class ParticleSwarmOptimization {
 //        for (int i = 0; i < particles.size(); i++) {
 //            particles.get(i).update();
 //        }
-        concurrentExecutor.evaluate(EVAL_PARTICLE, particles, new ArrayList<Particle>());
+        concurrentExecutor.map(EVAL_PARTICLE, particles, new ArrayList<Particle>());
     }
 
     public void runAndPrintIterations(int num) {
@@ -91,8 +88,7 @@ public class ParticleSwarmOptimization {
         return result;
     }
 
-    private static final PlayerSkeleton.Evaluator<Particle, Particle> EVAL_PARTICLE = new PlayerSkeleton
-            .Evaluator<Particle, Particle>() {
+    private static final PlayerSkeleton.Mapper<Particle, Particle> EVAL_PARTICLE = new PlayerSkeleton.Mapper<Particle, Particle>() {
         @Override
         public Particle evaluate(Particle particle) {
 //            System.out.println("Evaluating particle " + particle.toString());

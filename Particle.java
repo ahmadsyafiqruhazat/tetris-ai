@@ -1,4 +1,3 @@
-import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ForkJoinPool;
@@ -73,22 +72,23 @@ public class Particle implements Comparable<Particle> {
     }
 
 
-    private static final PlayerSkeleton.Evaluator<Double[], Float> FITNESS_FUNC = new PlayerSkeleton.Evaluator<Double[],
-            Float>() {
+    private static final PlayerSkeleton.Mapper<Double[], Float> FITNESS_FUNC = new PlayerSkeleton.Mapper<Double[],
+                Float>() {
         @Override
         public Float evaluate(Double[] genes) {
-//            System.out.println("Evaluating fitness");
             double[] weights = new double[Constants.defaultGeneLength];
             for (int i = 0; i < Constants.defaultGeneLength; i++) {
                 weights[i] = genes[i];
             }
             int fitness = PlayerSkeleton.run(weights);
+//            System.out.println("New particle fitness obtained: " + fitness + " for particle [ " + Arrays.toString
+//                    (weights) + "].");
             return (float) fitness;
         }
     };
 
-    private static final PlayerSkeleton.Executor<Float, Float> AVG_SCORE = new PlayerSkeleton.Executor<Float,
-            Float>() {
+    private static final PlayerSkeleton.Reducer<Float, Float> AVG_SCORE = new PlayerSkeleton.Reducer<Float,
+                Float>() {
 
         @Override
         public Float execute(Iterable<Float> inputs) {
@@ -100,7 +100,6 @@ public class Particle implements Comparable<Particle> {
                 sum += num;
                 ++count;
             }
-
             return sum / (float) count;
         }
     };
@@ -129,8 +128,12 @@ public class Particle implements Comparable<Particle> {
 =======
 //        System.out.println("Number of runs: " + allPositions.size());
 
+<<<<<<< HEAD
 >>>>>>> 80e3e9dfd01bb508395b7cf45149b3cce75a242d
         result = concurrentExecutor.execute(FITNESS_FUNC, AVG_SCORE, allPositions);
+=======
+        result = concurrentExecutor.reduce(FITNESS_FUNC, AVG_SCORE, allPositions);
+>>>>>>> fb5dbf1888460d3ba1e9d5749d66c9fc6dc54d11
         fitness = (int) result;
     }
 
@@ -226,6 +229,10 @@ public class Particle implements Comparable<Particle> {
             double gene = random.nextDouble() * Constants.MAX_INIT_WEIGHT;
             position[i] = gene;
         }
+    }
+
+    public void setPosition(double[] position) {
+        this.position = position;
     }
 
     public double getGene(int index) {

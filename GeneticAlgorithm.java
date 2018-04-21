@@ -5,11 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Random;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
-
-import com.sun.org.apache.bcel.internal.generic.POP;
 
 public class GeneticAlgorithm {
 
@@ -82,13 +78,14 @@ public class GeneticAlgorithm {
         Particle indiv1 = tournamentSelection(oldPopulation);
         Particle indiv2 = tournamentSelection(oldPopulation);
         Particle newIndiv = crossover(indiv1, indiv2);
+        System.out.println("crossover's fitness: " + newIndiv.getFitness());
+//        System.out.println("crossover: " + Arrays.toString(newIndiv.getGenes()));
         newPopulation.saveIndividual(newIndiv);
-        System.out.println("finished fillWithFittest");
         return null;
     }
 
-    private static final PlayerSkeleton.Evaluator<Double[], Float> EVOLVE_FUNC = new PlayerSkeleton.Evaluator<Double[],
-            Float>() {
+    private static final PlayerSkeleton.Mapper<Double[], Float> EVOLVE_FUNC = new PlayerSkeleton.Mapper<Double[],
+                Float>() {
         @Override
         public Float evaluate(Double[] genes) {
 //            System.out.println("Evaluating fitness");
@@ -118,29 +115,46 @@ public class GeneticAlgorithm {
             c1 = 0.5;
             c2 = 0.5;
         } else {
-            c1 = indiv1.getFitness() / totalFitness;
-            c2 = indiv2.getFitness() / totalFitness;
+            c1 = (double) indiv1.getFitness() / (double) totalFitness;
+            c2 = (double) indiv2.getFitness() / (double) totalFitness;
+//            System.out.println("c1: " + c1 + "c2: " + c2);
         }
 
-        Random random = new Random();
+//        System.out.println("new gene1:");
         for(int i=0;i<Constants.defaultGeneLength; i++){
             newGene1[i] = c1*gene1[i] +c2*gene2[i];
+//            System.out.println(newGene1[i]);
         }
 
         return newSol;
     }
 
     // Mutate an individual
-    private static void mutate(Particle indiv) {
+    static void mutate(Particle indiv) {
         // Loop through genes
+
+        Random random = new Random();
+        if (Math.random() <= Constants.mutationRate) {
+            int position = random.nextInt(10);
+            double gene = (random.nextDouble() * 0.4 - 0.2) + 1;
+            indiv.mutateGene(position, gene);
+        }
+    }
+
+    static Particle getMutated(Particle indiv) {
+        // Loop through genes
+
+        Particle mutated = new Particle();
+        Random random = new Random();
         for (int i = 0; i < indiv.size(); i++) {
             if (Math.random() <= Constants.mutationRate) {
-                // Create random gene
-                Random random = new Random();
-                double gene = (random.nextDouble() * 0.4 - 0.2) + 1;
-                indiv.mutateGene(i, gene);
+                double mutateScale = (random.nextDouble() * 0.4 - 0.2) + 1;
+                mutated.setGene(i, indiv.getGene(i) * mutateScale);
+            } else {
+                mutated.setGene(i, indiv.getGene(i));
             }
         }
+        return mutated;
     }
 
     // Select chromosomes for crossover
@@ -168,18 +182,18 @@ public class GeneticAlgorithm {
 
    //     while (true) {
 //            System.out.println("getFitness: " +myPop.getFittest().getFitness());
-            if(maxFitness > myPop.getFittest().getKey().getFitness()){
-                lostGeneration++;
-
-            } else {
-                maxFitness = myPop.getFittest().getKey().getFitness();
-                lostGeneration = 0;
-            }
-//            if(lostGeneration> Constants.MAX_LOST_GENERATION){
-//                break;
+//            if(maxFitness > myPop.getFittest().getKey().getFitness()){
+//                lostGeneration++;
+//
+//            } else {
+//                maxFitness = myPop.getFittest().getKey().getFitness();
+//                lostGeneration = 0;
 //            }
-            generationCount++;
-            System.out.println("Generation: " + i + " Fittest: " + myPop.getFittest().getKey().getFitness() + " Max " + maxFitness);
+////            if(lostGeneration> Constants.MAX_LOST_GENERATION){
+////                break;
+////            }
+//            generationCount++;
+//            System.out.println("Generation: " + i + " Fittest: " + myPop.getFittest().getKey().getFitness() + " Max " + maxFitness);
             myPop = evolvePopulation(myPop);
 //            System.out.println("Lost " + lostGeneration + " Max: "+  maxFitness);
 //        }
