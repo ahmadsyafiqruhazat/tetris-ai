@@ -81,8 +81,6 @@ public class Particle implements Comparable<Particle> {
                 weights[i] = genes[i];
             }
             int fitness = PlayerSkeleton.run(weights);
-//            System.out.println("New particle fitness obtained: " + fitness + " for particle [ " + Arrays.toString
-//                    (weights) + "].");
             return (float) fitness;
         }
     };
@@ -199,15 +197,6 @@ public class Particle implements Comparable<Particle> {
         initializeFitness();
         initializePBest();
     }
-
-//    public Particle(Chromosome chromosome) {
-//        double[] initPos = chromosome.getGenes();
-//        random = new Random();
-//        initializePosition(initPos);
-//        initializeVelocity();
-//        initializeFitness(chromosome.getFitness());
-//        initializePBest();
-//    }
 
     public void update() {
         updateFitness();
