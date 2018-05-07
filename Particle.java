@@ -122,9 +122,7 @@ public class Particle implements Comparable<Particle> {
             allPositions.add(weights);
         }
 
-//        System.out.println("Number of runs: " + allPositions.size());
-
-        result = concurrentExecutor.reduce(FITNESS_FUNC, AVG_SCORE, allPositions);
+        result = concurrentExecutor.execute(FITNESS_FUNC, AVG_SCORE, allPositions);
         fitness = (int) result;
     }
 
