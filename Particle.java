@@ -121,8 +121,8 @@ public class Particle implements Comparable<Particle> {
         for (int i = 0; i < Constants.NUM_RUNS; i++) {
             allPositions.add(weights);
         }
-
         result = concurrentExecutor.execute(FITNESS_FUNC, AVG_SCORE, allPositions);
+        result = concurrentExecutor.reduce(FITNESS_FUNC, AVG_SCORE, allPositions);
         fitness = (int) result;
     }
 
