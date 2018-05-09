@@ -227,6 +227,8 @@ public class PlayerSkeleton {
   }
 
 
+
+
   static void initializeLegalMoves() {
 
     // generate legal moves - done globally for use in ldfs
@@ -448,22 +450,6 @@ public class PlayerSkeleton {
       heuristic -= (double)(weights[7]*numHoleCols);
       heuristic -= (double)(weights[8]*concavity);
       heuristic += (double)(weights[9]*(float)rowsCleared);
-
-//        heuristic -= (double)(weights[0]*maxHeight)/ROWS;
-//        heuristic -= (double)(weights[1]*totalHeight)/(ROWS*COLS);
-//        heuristic -= (double)(weights[2]*bumpiness)/80;
-//        heuristic -= (double)(weights[3]*numHoles)/400;
-//        heuristic -= (double)(weights[4]*maxHoleHeight)/ROWS;
-//        heuristic -= (double)(weights[5]*holeDepth)/200;
-//        heuristic -= (double)(weights[6]*numHoleRows)/ROWS;
-//        heuristic -= (double)(weights[7]*numHoleCols)/COLS;
-//        heuristic -= (double)(weights[8]*concavity)/100;
-//        heuristic += (double)(weights[9]*(float)rowsCleared)/4;
-
-
-
-
-      // System.out.println((weights[8]*concavity)/100);
       
       return heuristic;  
     }
@@ -579,10 +565,7 @@ public class PlayerSkeleton {
     int pickedMove=0;
 
     try {
-        while (!s.hasLost() && moves <= Constants.MAX_MOVES) {
-          if (moves >= Constants.MAX_MOVES) {
-            System.out.println("Max Move is hit!");
-          }
+        while (!s.hasLost()) {
           pickedMove = p.pickMove(s, s.legalMoves());
             s.makeMove(pickedMove);
             moves++;
