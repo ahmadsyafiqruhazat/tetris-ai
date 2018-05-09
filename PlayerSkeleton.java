@@ -586,10 +586,30 @@ public class PlayerSkeleton {
     pHeight = State.getpHeight();
     pTop = State.getpTop();
 
-    initializeLegalMoves();
+    // generate legal moves - done globally for use in ldfs
+    for(int i = 0; i < N_PIECES; i++) {
+      //figure number of legal moves
+      int n = 0;
+      for(int j = 0; j < pOrients[i]; j++) {
+        //number of locations in this orientation
+        n += COLS+1-pWidth[i][j];
+      }
+      //allocate space
+      legalMoves[i] = new int[n][2];
+      //for each orientation
+      n = 0;
+      for(int j = 0; j < pOrients[i]; j++) {
+        //for each slot
+        for(int k = 0; k < COLS+1-pWidth[i][j];k++) {
+          legalMoves[i][n][ORIENT] = j;
+          legalMoves[i][n][SLOT] = k;
+          n++;
+        }
+      }
+    }
 
-    ForkJoinPool forkJoinPool = new ForkJoinPool();
-    PlayerSkeleton p = new PlayerSkeleton(forkJoinPool);
+    ForkJoinPool concurrentExecutor = new ForkJoinPool();
+    PlayerSkeleton p = new PlayerSkeleton(concurrentExecutor);
     p.setWeights(weights);
     int moves = 0;
 
