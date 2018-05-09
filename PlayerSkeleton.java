@@ -14,9 +14,9 @@ import java.util.stream.IntStream;
 
 public class PlayerSkeleton {
 
-  public static final int COLS = 10;
-  public static final int ROWS = 21;
-  public static final int N_PIECES = 7;
+  public static final int COLS = State.COLS;
+  public static final int ROWS = State.ROWS;
+  public static final int N_PIECES = State.N_PIECES;
 
   //indices for legalMoves
   public static final int ORIENT = 0;
@@ -257,10 +257,12 @@ public class PlayerSkeleton {
   /**
    * A working State for running the game
    */
-  private class WorkingState extends State {
+  private class WorkingState {
     public int[][] field = new int[ROWS][COLS];
     public int[] top = new int[COLS];
     public int turn, cleared;
+    
+    public boolean lost = false;
 
     public WorkingState(State state) {
       field = cloneField(state.getField());
@@ -268,8 +270,19 @@ public class PlayerSkeleton {
       cloneScores(state, true);
     }
 
+    public WorkingState(WorkingState ws) {
+      field = cloneField(ws.getField());
+      top = cloneTop(ws.getTop());
+      cloneScores(ws, true);
+    }
+
     public WorkingState(int piece, int orient, int slot, State state) {
       this(state);
+      makeSpecificMove(piece, orient, slot);
+    }
+
+    public WorkingState(int piece, int orient, int slot, WorkingState ws) {
+      this(ws);
       makeSpecificMove(piece, orient, slot);
     }
 
@@ -289,6 +302,18 @@ public class PlayerSkeleton {
       } else {
         // else, it is from a workingState, so take existing cleared
         cleared = s.getRowsCleared();
+      }
+    }
+
+    private void cloneScores(WorkingState ws, boolean isStart) {
+      turn = ws.getTurnNumber();
+      if (isStart) {
+        // isStart means that we clone from a game state
+        // total cleared is 0
+        cleared = 0;
+      } else {
+        // else, it is from a workingState, so take existing cleared
+        cleared = ws.getRowsCleared();
       }
     }
 
@@ -385,22 +410,18 @@ public class PlayerSkeleton {
       return new MoveResult(field, top, turn, false, rowsCleared);
     }
 
-    @Override
     public int[][] getField() {
       return field;
     }
 
-    @Override
     public int[] getTop() {
       return top;
     }
 
-    @Override
     public int getRowsCleared() {
       return cleared;
     }
 
-    @Override
     public int getTurnNumber() {
       return turn;
     }
@@ -421,6 +442,40 @@ public class PlayerSkeleton {
     }
 
     public double score(State s) {
+      this.field = s.getField();
+      this.top = s.getTop();
+      this.rowsCleared = s.getRowsCleared();
+
+      // score: the higher the better, but
+      // it can be both positive and negative
+      double heuristic = 0; 
+      
+      int maxHeight = getMaxHeight();
+      int totalHeight = getTotalHeight();
+      int bumpiness = getBumpiness();
+      int[] holesArray = getHoles();
+      int numHoles = holesArray[0];
+      int maxHoleHeight = holesArray[1];
+      int holeDepth = holesArray[2];
+      int numHoleRows = holesArray[3];
+      int numHoleCols = holesArray[4];
+      int concavity = getConcavity();
+      
+      heuristic -= (double)(weights[0]*maxHeight);
+      heuristic -= (double)(weights[1]*totalHeight);
+      heuristic -= (double)(weights[2]*bumpiness);
+      heuristic -= (double)(weights[3]*numHoles);
+      heuristic -= (double)(weights[4]*maxHoleHeight);
+      heuristic -= (double)(weights[5]*holeDepth);
+      heuristic -= (double)(weights[6]*numHoleRows);
+      heuristic -= (double)(weights[7]*numHoleCols);
+      heuristic -= (double)(weights[8]*concavity);
+      heuristic += (double)(weights[9]*(float)rowsCleared);
+      
+      return heuristic;  
+    }
+    
+    public double score(WorkingState s) {
       this.field = s.getField();
       this.top = s.getTop();
       this.rowsCleared = s.getRowsCleared();
@@ -531,31 +586,7 @@ public class PlayerSkeleton {
     pHeight = State.getpHeight();
     pTop = State.getpTop();
 
-<<<<<<< HEAD
-    // generate legal moves - done globally for use in ldfs
-    for(int i = 0; i < N_PIECES; i++) {
-      //figure number of legal moves
-      int n = 0;
-      for(int j = 0; j < pOrients[i]; j++) {
-        //number of locations in this orientation
-        n += COLS+1-pWidth[i][j];
-      }
-      //allocate space
-      legalMoves[i] = new int[n][2];
-      //for each orientation
-      n = 0;
-      for(int j = 0; j < pOrients[i]; j++) {
-        //for each slot
-        for(int k = 0; k < COLS+1-pWidth[i][j];k++) {
-          legalMoves[i][n][ORIENT] = j;
-          legalMoves[i][n][SLOT] = k;
-          n++;
-        }
-      }
-    }
-=======
     initializeLegalMoves();
->>>>>>> 80e3e9dfd01bb508395b7cf45149b3cce75a242d
 
     ForkJoinPool forkJoinPool = new ForkJoinPool();
     PlayerSkeleton p = new PlayerSkeleton(forkJoinPool);
